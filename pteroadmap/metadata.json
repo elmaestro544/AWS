@@ -1,0 +1,7 @@
+{
+  "name": "PTE Roadmap",
+  "description": "A comprehensive web application for PTE (Pearson Test of English) academic practice, offering AI-powered scoring and feedback for various question types to help users prepare for their exam.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
