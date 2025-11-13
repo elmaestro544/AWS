@@ -1,20 +1,10 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { i18n } from '../constants.js';
 import { generateProjectPlan } from '../services/planningService.js';
-import { Spinner, UserIcon, HistoryIcon, PlusIcon, AttachIcon } from './Shared.js';
+import { Spinner, UserIcon, HistoryIcon, PlusIcon, AttachIcon, FeatureToolbar } from './Shared.js';
 
-const GradientButton = ({ onClick, children, disabled = false }) => React.createElement('button', {
-    onClick,
-    disabled,
-    className: "px-6 py-3 font-semibold text-white bg-button-gradient rounded-lg shadow-lg shadow-glow-purple transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-}, children);
-
-const SecondaryButton = ({ onClick, children }) => React.createElement('button', {
-    onClick,
-    className: "px-6 py-3 font-semibold text-brand-text-light bg-dark-card-solid hover:bg-white/10 border border-dark-border rounded-lg transition-colors"
-}, children);
 
 const PlanIcon = ({ className = 'h-16 w-16 text-slate-500' }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, viewBox: "0 0 64 64" },
     React.createElement('path', { d: "M48 14L49.5 10.5L53 9L49.5 7.5L48 4L46.5 7.5L43 9L46.5 10.5L48 14Z", fill: '#5EEAD4' }),
@@ -25,51 +15,16 @@ const PlanIcon = ({ className = 'h-16 w-16 text-slate-500' }) => React.createEle
     React.createElement('rect', { x: '20', y: '38', width: '26', height: '3', rx: '1.5', fill: '#115E59' })
 );
 
-const IntroView = ({ onGenerateClick }) => (
-    React.createElement('div', { className: 'text-center flex flex-col items-center animate-fade-in-up' },
-        React.createElement(PlanIcon, null),
-        React.createElement('h2', { className: 'text-3xl font-bold mb-2 text-white' }, "Ready to start with an AI-generated plan?"),
-        React.createElement('p', { className: 'max-w-md text-brand-text-light mb-6' }, "Save time, reduce setup work, and start managing right away by letting AI instantly build a project plan with tasks and milestones tailored to your goal."),
-        React.createElement('div', { className: 'flex gap-4' },
-            React.createElement(SecondaryButton, { onClick: () => {} }, "Skip for now"),
-            React.createElement(GradientButton, { onClick: onGenerateClick }, "Generate Plan")
-        )
-    )
-);
-
-const InputView = ({ objective, setObjective, onBack, onGenerate, error }) => (
-    React.createElement('div', { className: 'w-full max-w-lg text-center animate-fade-in-up' },
-        React.createElement(PlanIcon, { className: 'mx-auto' }),
-        React.createElement('h2', { className: 'text-3xl font-bold mb-2 text-white' }, "Generate a Project Plan"),
-        React.createElement('p', { className: 'text-brand-text-light mb-6' }, "Clearly describe your project goals in detail. The AI will use this to generate a comprehensive Work Breakdown Structure."),
-        error && React.createElement('div', { className: "bg-red-500/10 border border-red-500/30 text-center p-2 rounded-md mb-4 text-sm text-red-400 font-semibold" }, error),
-        React.createElement('textarea', {
-            value: objective,
-            onChange: (e) => setObjective(e.target.value),
-            placeholder: 'e.g., Launch a campaign to boost brand awareness by 25%',
-            rows: 3,
-            className: 'w-full p-4 bg-dark-card-solid border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple focus:outline-none resize-none text-white'
-        }),
-        React.createElement('div', { className: 'flex gap-4 mt-6' },
-            React.createElement(SecondaryButton, { onClick: onBack }, "Back"),
-            React.createElement(GradientButton, { onClick: onGenerate, disabled: !objective.trim() }, "Generate Plan")
-        )
-    )
-);
-
 const LoadingView = ({ progress }) => (
     React.createElement('div', { className: 'text-center flex flex-col items-center' },
-        React.createElement(PlanIcon, null),
+        React.createElement(PlanIcon, { className: 'h-12 w-12 text-slate-500' }),
         React.createElement('h2', { className: 'text-3xl font-bold mb-2 text-white' }, "Generating your project plan"),
-        React.createElement('p', { className: 'text-brand-text-light mb-8' }, "AI is creating a comprehensive WBS with tasks, dependencies, and milestones."),
-        React.createElement('div', { className: 'w-full max-w-md bg-dark-card-solid rounded-full h-2.5' },
-            React.createElement('div', { className: 'bg-brand-purple h-2.5 rounded-full transition-all duration-500', style: { width: `${progress}%` } })
-        ),
-        React.createElement('p', { className: 'text-brand-purple-light font-semibold mt-2' }, `${progress}%`)
+        React.createElement('p', { className: 'text-brand-text-light mb-8' }, "AI is creating a comprehensive WBS with tasks and milestones."),
+        React.createElement(Spinner, { size: '12' })
     )
 );
 
-const ResultsView = ({ plan, onDiscard }) => {
+const ResultsView = ({ plan }) => {
     const renderCardFooter = (item) => React.createElement('div', { className: 'flex items-center justify-between text-brand-text-light mt-4 pt-4 border-t border-dark-border' },
         React.createElement('div', { className: 'flex items-center gap-4 text-sm' },
             React.createElement('div', { className: 'flex items-center gap-1.5', title: 'Assignees' },
@@ -83,15 +38,8 @@ const ResultsView = ({ plan, onDiscard }) => {
         )
     );
 
-    return React.createElement('div', { className: 'w-full h-full flex flex-col p-6 animate-fade-in-up' },
-        React.createElement('div', { className: 'flex-shrink-0 flex justify-between items-center mb-6' },
-            React.createElement('h2', { className: 'text-2xl font-bold text-white' }, "Generated Project Plan"),
-            React.createElement('div', { className: 'flex gap-4' },
-                React.createElement(SecondaryButton, { onClick: onDiscard }, "Discard"),
-                React.createElement(GradientButton, { onClick: () => alert('Applying plan...') }, "Apply Plan")
-            )
-        ),
-        React.createElement('div', { className: 'flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-y-auto' },
+    return React.createElement('div', { className: 'w-full flex flex-col animate-fade-in-up' },
+        React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
             // Work Breakdown Structure Column
             React.createElement('div', null,
                 React.createElement('h3', { className: 'text-xl font-semibold mb-4 flex items-center justify-between text-white' },
@@ -107,11 +55,7 @@ const ResultsView = ({ plan, onDiscard }) => {
                                 React.createElement('div', { key: sIndex, className: 'pl-4 border-l-2 border-dark-border' }, sub.name)
                              ))
                         ),
-                        renderCardFooter(task),
-                         React.createElement('div', { className: 'flex items-center gap-4 text-xs text-brand-text-light mt-2' },
-                            React.createElement('button', { className: 'hover:text-white flex items-center gap-1' }, React.createElement(PlusIcon, { className: 'h-3 w-3' }), 'Add subtask'),
-                            React.createElement('button', { className: 'hover:text-white flex items-center gap-1' }, React.createElement(AttachIcon, { className: 'h-3 w-3' }), 'Add dependency')
-                        )
+                        renderCardFooter(task)
                     ))
                 )
             ),
@@ -133,76 +77,88 @@ const ResultsView = ({ plan, onDiscard }) => {
     );
 };
 
-
-const PlanningView = ({ language }) => {
-    const [viewState, setViewState] = useState('intro'); // intro, input, loading, results
+const InputView = ({ onGenerate, isLoading, error }) => {
     const [objective, setObjective] = useState('');
-    const [plan, setPlan] = useState(null);
-    const [error, setError] = useState(null);
-    const [progress, setProgress] = useState(0);
 
-    const handleGeneratePlan = async () => {
-        if (!objective.trim()) return;
-        setViewState('loading');
-        setError(null);
-        setProgress(0);
-
-        try {
-            const generatedPlan = await generateProjectPlan(objective);
-            setPlan(generatedPlan);
-            setViewState('results');
-        } catch (err) {
-            setError(err.message || 'An unexpected error occurred.');
-            setViewState('input');
-        }
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onGenerate(objective);
     };
     
-    useEffect(() => {
-        let timer;
-        if (viewState === 'loading') {
-            setProgress(10); // Start with a small amount
-            timer = setInterval(() => {
-                setProgress(prev => {
-                    if (prev >= 95) {
-                        clearInterval(timer);
-                        return prev;
-                    }
-                    const increment = Math.random() * 10;
-                    return Math.min(prev + increment, 95);
-                });
-            }, 500);
-        }
-        return () => clearInterval(timer);
-    }, [viewState]);
+    return React.createElement('div', { className: 'w-full max-w-2xl text-center animate-fade-in-up' },
+        React.createElement(PlanIcon, { className: 'h-12 w-12 text-slate-500 mx-auto' }),
+        React.createElement('h2', { className: 'text-3xl font-bold mb-2 text-white' }, "Start a New Project"),
+        React.createElement('p', { className: 'text-brand-text-light mb-6' }, "Provide your high-level project objective below. Our AI will generate a comprehensive plan, schedule, budget, and more."),
+        error && React.createElement('div', { className: "bg-red-500/10 border border-red-500/30 text-center p-2 rounded-md mb-4 text-sm text-red-400 font-semibold" }, error),
+        React.createElement('form', { onSubmit: handleSubmit, className: 'space-y-4 text-left' },
+            React.createElement('textarea', {
+                value: objective,
+                onChange: e => setObjective(e.target.value),
+                placeholder: "e.g., Launch a marketing campaign for our new Q4 product release...",
+                rows: 4,
+                className: "w-full p-3 bg-dark-card-solid border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple focus:outline-none resize-none text-white placeholder-slate-500",
+                disabled: isLoading
+            }),
+            React.createElement('button', {
+                type: 'submit',
+                disabled: isLoading || !objective.trim(),
+                className: "w-full px-6 py-3 font-semibold text-white bg-button-gradient rounded-lg shadow-lg shadow-glow-purple transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 flex items-center justify-center"
+            }, isLoading ? React.createElement(Spinner, null) : "Generate Project")
+        )
+    );
+};
 
-    const resetState = () => {
-        setViewState('intro');
-        setObjective('');
-        setPlan(null);
-        setError(null);
-    };
+
+const PlanningView = ({ language, projectData, onUpdateProject, onResetProject, isLoading, setIsLoading, error, setError }) => {
+    const t = i18n[language];
+    const fullscreenRef = useRef(null);
+
+    // Effect to auto-generate plan when objective is set
+    useEffect(() => {
+        if (projectData.objective && !projectData.plan && !isLoading) {
+            const generate = async () => {
+                try {
+                    setIsLoading(true);
+                    setError(null);
+                    const plan = await generateProjectPlan(projectData.objective);
+                    onUpdateProject({ plan });
+                } catch (err) {
+                    setError(err.message || 'An unexpected error occurred.');
+                    onResetProject(); // Reset if planning fails, as it's the first step
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            generate();
+        }
+    }, [projectData.objective, projectData.plan, isLoading, onUpdateProject, setIsLoading, setError, onResetProject]);
 
     const renderContent = () => {
-        switch (viewState) {
-            case 'input':
-                return React.createElement(InputView, {
-                    objective, setObjective,
-                    onBack: () => setViewState('intro'),
-                    onGenerate: handleGeneratePlan,
-                    error
-                });
-            case 'loading':
-                return React.createElement(LoadingView, { progress: Math.round(progress) });
-            case 'results':
-                return React.createElement(ResultsView, { plan, onDiscard: resetState });
-            case 'intro':
-            default:
-                return React.createElement(IntroView, { onGenerateClick: () => setViewState('input') });
+        if (!projectData.objective) {
+            return React.createElement(InputView, {
+                onGenerate: (objective) => onUpdateProject({ objective }),
+                isLoading,
+                error
+            });
         }
+        if (isLoading && !projectData.plan) {
+            return React.createElement(LoadingView, null);
+        }
+        if (projectData.plan) {
+            return React.createElement(ResultsView, { plan: projectData.plan });
+        }
+        // This state can happen briefly between objective being set and loading starting
+        return React.createElement(LoadingView, null); 
     };
     
-    return React.createElement('div', { className: "h-full flex flex-col items-center justify-center text-white" },
-       renderContent()
+    return React.createElement('div', { ref: fullscreenRef, className: "h-full flex flex-col text-white bg-dark-card printable-container" },
+       React.createElement('div', { className: 'flex-grow min-h-0 overflow-y-auto' },
+           React.createElement('div', {
+               className: 'p-6 printable-content h-full flex items-center justify-center',
+           },
+               renderContent()
+           )
+       )
     );
 };
 

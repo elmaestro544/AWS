@@ -2,9 +2,10 @@
 
 // components/AgentView.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { generateVendorOffers } from '../services/agentService.js';
-import { Spinner, CloseIcon } from './Shared.js';
+import { Spinner, CloseIcon, FeatureToolbar } from './Shared.js';
+import { i18n } from '../constants.js';
 
 // --- Sub-Components ---
 
@@ -202,7 +203,19 @@ const RequestOfferModal = ({ isOpen, onClose, language }) => {
 };
 
 const AgentView = ({ language }) => {
+    const t = i18n[language];
+    const fullscreenRef = useRef(null);
+    const contentRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Toolbar state and handlers
+    const [zoomLevel, setZoomLevel] = useState(1);
+    const [isEditing, setIsEditing] = useState(false);
+
+    const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 1.5));
+    const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.7));
+    const handleToggleEdit = () => setIsEditing(prev => !prev);
+    const handleExport = () => window.print();
 
     const partners = [
         { name: "PixelCraft Agency", service: "UI/UX Design services", status: "Active", contact: { name: "Lisa Johnson", phone: "11234567890", email: "example@mail.com" }, rating: "4/5" },
@@ -211,15 +224,34 @@ const AgentView = ({ language }) => {
         { name: "CloudWorks Co.", service: "Cloud Infrastructure", status: "Active", contact: { name: "Peter Jones", phone: "11234567893", email: "peter@mail.com" }, rating: "4.2/5" }
     ];
 
-    return React.createElement('div', { className: 'h-full flex flex-col p-6 gap-6' },
-        React.createElement('div', { className: 'flex-shrink-0 flex justify-between items-center' },
-            React.createElement('h2', { className: 'text-2xl font-bold text-white' }, "Procurement"),
-            React.createElement('button', { onClick: () => setIsModalOpen(true), className: 'px-4 py-2 text-sm font-semibold bg-button-gradient text-white rounded-md transition-opacity hover:opacity-90 shadow-md shadow-brand-purple/20' }, "Request Offer")
-        ),
-        React.createElement('div', { className: 'flex-grow min-h-0' },
-            React.createElement('h3', { className: 'font-bold text-white mb-4' }, 'External Partners'),
-            React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto h-full' },
-                partners.map(p => React.createElement(PartnerCard, { key: p.name, ...p }))
+    return React.createElement('div', { ref: fullscreenRef, className: 'h-full flex flex-col bg-dark-card text-white printable-container' },
+        React.createElement(FeatureToolbar, {
+            title: t.dashboardAgents,
+            containerRef: fullscreenRef,
+            onZoomIn: handleZoomIn,
+            onZoomOut: handleZoomOut,
+            onToggleEdit: handleToggleEdit,
+            isEditing: isEditing,
+            onExport: handleExport
+        }),
+        React.createElement('div', { className: 'flex-grow min-h-0 overflow-y-auto' },
+            React.createElement('div', {
+               ref: contentRef,
+               className: 'p-6 printable-content',
+               style: { transform: `scale(${zoomLevel})`, transformOrigin: 'top left', transition: 'transform 0.2s ease' },
+               contentEditable: isEditing,
+               suppressContentEditableWarning: true
+            },
+                React.createElement('div', { className: 'flex-shrink-0 flex justify-between items-center' },
+                    React.createElement('h2', { className: 'text-2xl font-bold text-white' }, "Procurement"),
+                    React.createElement('button', { onClick: () => setIsModalOpen(true), className: 'px-4 py-2 text-sm font-semibold bg-button-gradient text-white rounded-md transition-opacity hover:opacity-90 shadow-md shadow-brand-purple/20' }, "Request Offer")
+                ),
+                React.createElement('div', { className: 'mt-6' },
+                    React.createElement('h3', { className: 'font-bold text-white mb-4' }, 'External Partners'),
+                    React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
+                        partners.map(p => React.createElement(PartnerCard, { key: p.name, ...p }))
+                    )
+                )
             )
         ),
         React.createElement(RequestOfferModal, { isOpen: isModalOpen, onClose: () => setIsModalOpen(false), language })

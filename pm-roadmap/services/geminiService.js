@@ -1,5 +1,6 @@
 
-import { GoogleGenAI } from "@google/genai";
+
+import { GoogleGenAI, Modality } from "@google/genai";
 
 // --- API Key and Client Management ---
 
@@ -72,7 +73,76 @@ export const sendChatMessage = async (chatSession, message, file, useWebSearch) 
         });
         return { text: result.text, sources: result.candidates?.[0]?.groundingMetadata?.groundingChunks || [], isStream: false };
     } else {
-        const stream = await chatSession.sendMessageStream({ content: { parts: messageParts } });
+        const stream = await chatSession.sendMessageStream({ message: { parts: messageParts } });
         return { stream, isStream: true };
     }
+};
+
+
+// --- Live API Helper Functions (for Voice Chat) ---
+
+function encode(bytes) {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+export function decode(base64) {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+export async function decodeAudioData(data, ctx, sampleRate, numChannels) {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length / numChannels;
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    }
+  }
+  return buffer;
+}
+
+export function createPcmBlob(data) {
+  const l = data.length;
+  const int16 = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    int16[i] = data[i] * 32768;
+  }
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: 'audio/pcm;rate=16000',
+  };
+}
+
+// --- Live API Session Management ---
+export const startVoiceSession = (callbacks) => {
+    if (!geminiClient) throw new Error("Gemini client not initialized.");
+
+    const sessionPromise = geminiClient.live.connect({
+        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        callbacks: callbacks,
+        config: {
+            responseModalities: [Modality.AUDIO],
+            inputAudioTranscription: {},
+            outputAudioTranscription: {},
+            speechConfig: {
+                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+            },
+            systemInstruction: "You are an expert AI assistant for project and construction management. Provide concise, actionable advice, data analysis, and generate project artifacts like WBS, schedules, and risk assessments based on user requests. Keep your spoken responses brief and to the point.",
+        },
+    });
+
+    return sessionPromise;
 };

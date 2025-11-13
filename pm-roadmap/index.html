@@ -74,6 +74,14 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        @keyframes pulse {
+            50% {
+                opacity: .5;
+            }
+        }
+        .animate-pulse-fast {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
         @keyframes slide-in-up {
             from {
                 opacity: 0;
@@ -100,6 +108,76 @@
         .animate-fade-in-up {
             animation: fade-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
+
+        /* Cityscape Animation */
+        @keyframes grow-building {
+            from {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            to {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+        .building {
+            transform-origin: bottom;
+            animation: grow-building 1.5s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+        }
+        @keyframes crane-arm-swing {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(45deg); }
+        }
+        .crane-arm {
+            transform-origin: 2.5px 2.5px;
+            animation: crane-arm-swing 15s ease-in-out infinite;
+        }
+        @keyframes light-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .blinking-light {
+            animation: light-blink 2s infinite;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body, #root {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            header, aside, .non-printable {
+                display: none !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .printable-container {
+                height: auto !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+            }
+            .printable-content {
+                transform: scale(1) !important; /* Reset zoom for printing */
+                padding: 1rem;
+                color: #000 !important;
+            }
+            /* Hide scrollbars for print */
+            ::-webkit-scrollbar {
+                display: none;
+            }
+            /* Adjust text colors for readability on white background */
+            .printable-content * {
+                color: #000 !important;
+                background-color: transparent !important;
+            }
+        }
     </style>
     <script>
       tailwind.config = {
@@ -114,6 +192,7 @@
               'brand-purple-light': '#5EEAD4', // light turquoise
               'brand-pink': '#A3E635', // green
               'brand-cyan': '#FACC15', // yellow
+              'brand-red': '#EF4444', // red
               
               'dark-bg': '#0D0C13',
               'dark-card': 'rgba(20, 18, 30, 0.5)',

@@ -14,6 +14,12 @@ export const SendIcon = ({className = "h-5 w-5 text-white"}) => (
     )
 );
 
+export const MicrophoneIcon = ({ className = "h-6 w-6" }) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" })
+    )
+);
+
 export const UserIcon = ({ className = "h-6 w-6" }) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" })
@@ -88,10 +94,10 @@ export const LockIcon = () => React.createElement('svg', { xmlns: "http://www.w3
   React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" })
 );
 
-export const Logo = () => (
-    React.createElement('div', { className: 'flex items-center' },
+export const Logo = ({ size = 'text-2xl', isExpanded = true }) => (
+    React.createElement('div', { className: `flex items-center gap-3 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}` },
         React.createElement('span', {
-            className: 'text-2xl font-bold bg-gradient-to-r from-cyan-400 via-lime-400 to-yellow-400 text-transparent bg-clip-text'
+            className: `${size} font-bold bg-gradient-to-r from-cyan-400 via-lime-400 to-yellow-400 text-transparent bg-clip-text`
         }, 'PM Roadmap')
     )
 );
@@ -106,13 +112,13 @@ export const SidebarToggleIcon = ({ isExpanded }) => (
     React.createElement('svg', {
         xmlns: "http://www.w3.org/2000/svg",
         className: `h-6 w-6 text-brand-text-light transition-transform duration-300`,
-        style: { transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)' },
+        style: { transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' },
         fill: "none",
         viewBox: "0 0 24 24",
         stroke: "currentColor",
         strokeWidth: 2
     },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M11 19l-7-7 7-7m8 14l-7-7 7-7" })
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6h16M4 12h16M4 18h16" })
     )
 );
 
@@ -129,11 +135,11 @@ const iconProps = {
     fill: "none",
     viewBox: "0 0 24 24",
     stroke: "currentColor",
-    strokeWidth: 2
+    strokeWidth: 1.5
 };
 
 export const PlanningIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 10h18M3 14h18M3 6h18M3 18h18" })
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" })
 );
 
 export const RiskIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
@@ -142,7 +148,7 @@ export const RiskIcon = ({ className = iconProps.className }) => React.createEle
 
 export const AgentIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8 9l4-4 4 4m0 6l-4 4-4-4" }),
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 12h-3m-4 0H3" })
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
 );
 
 export const ScheduleIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
@@ -152,3 +158,113 @@ export const ScheduleIcon = ({ className = iconProps.className }) => React.creat
 export const BudgetIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" })
 );
+
+export const AssistantIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" })
+);
+
+export const StructureIcon = ({ className = iconProps.className, viewBox = "0 0 24 24" }) => React.createElement('svg', { ...iconProps, className, viewBox },
+    React.createElement('circle', { cx: "12", cy: "5", r: "2" }),
+    React.createElement('circle', { cx: "6", cy: "19", r: "2" }),
+    React.createElement('circle', { cx: "18", cy: "19", r: "2" }),
+    React.createElement('path', { d: "M12 7v10" }),
+    React.createElement('path', { d: "m9 16.5-3-3" }),
+    React.createElement('path', { d: "m15 16.5 3-3" }),
+    React.createElement('path', { d: "M6 17v-3" }),
+    React.createElement('path', { d: "M18 17v-3" })
+);
+
+export const KpiIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21.5 12c0-5.25-4.25-9.5-9.5-9.5S2.5 6.75 2.5 12s4.25 9.5 9.5 9.5" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "m14 14 3.5 3.5" })
+);
+
+export const SCurveIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 18c3.5-3.5 4-10 7-12 3-2 5.5.5 8 5" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21H3V3" })
+);
+
+
+// --- New Feature Toolbar Icons ---
+const toolbarIconProps = {
+    xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5", fill: "none",
+    viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2
+};
+
+export const ZoomInIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" }));
+export const ZoomOutIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" }));
+export const FullscreenIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" }));
+export const FullscreenExitIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 14h4v4m-4-4l5 5m11-5h-4v4m4-4l-5 5M14 4h4v4m-4-4l5 5M5 9V5h4m-4 0l5 5" }));
+export const ExpandIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M19 9l-7 7-7-7" }));
+export const CollapseIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M5 15l7-7 7 7" }));
+export const EditIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" }));
+export const ExportIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" }));
+
+
+// --- New Feature Toolbar Component ---
+export const FeatureToolbar = ({ title, containerRef, onZoomIn, onZoomOut, onToggleEdit, isEditing, onExport, onExpandAll, onCollapseAll, scale, onScaleChange }) => {
+    const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+    const handleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    React.useEffect(() => {
+        const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+    }, []);
+
+    const IconButton = ({ icon, onClick, disabled = false, tooltip, className = '' }) => (
+        React.createElement('button', {
+            onClick, disabled, 'aria-label': tooltip,
+            className: `p-2 rounded-md text-brand-text-light hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`
+        }, icon)
+    );
+    
+    const scaleOptions = [
+        { id: 'days', label: 'Days' },
+        { id: 'weeks', label: 'Weeks' },
+        { id: 'months', label: 'Months' }
+    ];
+
+    return React.createElement('div', {
+        className: 'non-printable flex-shrink-0 h-16 flex items-center justify-between px-6 border-b border-dark-border bg-dark-card/50'
+    },
+        React.createElement('h2', { className: 'text-xl font-bold text-white' }, title),
+        React.createElement('div', { className: 'flex items-center gap-2' },
+            onZoomIn && React.createElement(IconButton, { icon: React.createElement(ZoomInIcon), onClick: onZoomIn, tooltip: 'Zoom In' }),
+            onZoomOut && React.createElement(IconButton, { icon: React.createElement(ZoomOutIcon), onClick: onZoomOut, tooltip: 'Zoom Out' }),
+            
+            onScaleChange && React.createElement('div', { className: 'flex items-center p-1 bg-dark-card-solid rounded-md mx-2' },
+                scaleOptions.map(option => React.createElement('button', {
+                    key: option.id,
+                    onClick: () => onScaleChange(option.id),
+                    className: `px-3 py-1 text-sm font-semibold rounded-md transition-colors ${scale === option.id ? 'bg-dark-bg text-white' : 'text-brand-text-light hover:bg-dark-bg/50'}`
+                }, option.label))
+            ),
+
+            onExpandAll && React.createElement(IconButton, { icon: React.createElement(ExpandIcon), onClick: onExpandAll, tooltip: 'Expand All' }),
+            onCollapseAll && React.createElement(IconButton, { icon: React.createElement(CollapseIcon), onClick: onCollapseAll, tooltip: 'Collapse All' }),
+            
+            (onExpandAll || onScaleChange) && React.createElement('div', { className: 'w-px h-6 bg-dark-border mx-2' }),
+            
+            onToggleEdit && React.createElement(IconButton, {
+                icon: React.createElement(EditIcon),
+                onClick: onToggleEdit,
+                tooltip: isEditing ? 'Finish Editing' : 'Edit Content',
+                className: isEditing ? 'bg-brand-purple/20 text-brand-purple-light' : ''
+            }),
+            React.createElement(IconButton, { icon: isFullscreen ? React.createElement(FullscreenExitIcon) : React.createElement(FullscreenIcon), onClick: handleFullscreen, tooltip: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen' }),
+            onExport && React.createElement(IconButton, { icon: React.createElement(ExportIcon), onClick: onExport, tooltip: 'Export as PDF/Print' })
+        )
+    );
+};

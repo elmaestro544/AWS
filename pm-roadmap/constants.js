@@ -1,6 +1,4 @@
-
-
-import { PlanningIcon, RiskIcon, AgentIcon, ScheduleIcon, BudgetIcon } from './components/Shared.js';
+import { PlanningIcon, RiskIcon, AgentIcon, ScheduleIcon, BudgetIcon, AssistantIcon, StructureIcon, KpiIcon, SCurveIcon } from './components/Shared.js';
 
 export const AppView = Object.freeze({
   Home: 'home',
@@ -18,8 +16,12 @@ export const Language = Object.freeze({
 });
 
 export const DASHBOARD_VIEWS = [
+    { id: 'assistant', titleKey: 'dashboardAssistant', icon: AssistantIcon },
     { id: 'planning', titleKey: 'dashboardPlanning', icon: PlanningIcon },
     { id: 'scheduling', titleKey: 'dashboardScheduling', icon: ScheduleIcon },
+    { id: 'kpis', titleKey: 'dashboardKpis', icon: KpiIcon },
+    { id: 'scurve', titleKey: 'dashboardSCurve', icon: SCurveIcon },
+    { id: 'structure', titleKey: 'dashboardStructure', icon: StructureIcon },
     { id: 'risk', titleKey: 'dashboardRisk', icon: RiskIcon },
     { id: 'budget', titleKey: 'dashboardBudget', icon: BudgetIcon },
     { id: 'agents', titleKey: 'dashboardAgents', icon: AgentIcon },
@@ -121,11 +123,15 @@ export const i18n = {
     attachFile: "Attach File",
     thinking: "AI Assistant is thinking...",
     sources: "Sources",
+    dashboardAssistant: "AI Assistant",
     dashboardPlanning: "Planning",
     dashboardScheduling: "Scheduling",
+    dashboardStructure: "Structure",
     dashboardRisk: "Risk Control",
     dashboardBudget: "Budget",
     dashboardAgents: "AI Agents",
+    dashboardKpis: "KPIs",
+    dashboardSCurve: "S-Curve",
     // General
     errorOccurred: "An error occurred. Please try again.",
     connectWithUs: "Connect with us",
@@ -260,11 +266,15 @@ export const i18n = {
     attachFile: "إرفاق ملف",
     thinking: "المساعد الذكي يفكر...",
     sources: "المصادر",
+    dashboardAssistant: "مساعد الذكاء الاصطناعي",
     dashboardPlanning: "التخطيط",
     dashboardScheduling: "الجدولة",
+    dashboardStructure: "الهيكل",
     dashboardRisk: "إدارة المخاطر",
     dashboardBudget: "الميزانية",
     dashboardAgents: "الوكلاء الأذكياء",
+    dashboardKpis: "مؤشرات الأداء",
+    dashboardSCurve: "منحنى S",
     // General
     errorOccurred: "حدث خطأ. يرجى المحاولة مرة أخرى.",
     connectWithUs: "تواصل معنا",

@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { i18n, PRICING_PLANS, AppView } from '../constants.js';
 import { CloseIcon, CreditCardIcon, Spinner, CheckIcon } from './Shared.js';
@@ -104,8 +103,21 @@ const Pricing = ({ language, setView, currentUser, onLoginClick }) => {
         const isYearly = billingCycle === 'yearly';
         const priceDetails = isYearly && plan.yearly ? plan.yearly : plan.monthly;
         const isPopular = plan.isPopular;
+        const isCustom = priceDetails.price.en === 'Custom';
 
-        const cardClasses = `relative border rounded-2xl p-6 flex flex-col transition-all duration-300 ${isPopular ? 'bg-white dark:bg-dark-card border-brand-purple shadow-2xl shadow-glow-purple' : 'bg-slate-50 dark:bg-card-gradient border-slate-200 dark:border-white/10'}`;
+        const cardClasses = `relative border rounded-2xl p-6 flex flex-col transition-all duration-300 ${
+            isPopular 
+                ? 'bg-white dark:bg-dark-card border-brand-purple shadow-2xl shadow-glow-purple' 
+                : isCustom
+                    ? 'bg-white dark:bg-dark-card border-brand-pink shadow-2xl shadow-glow-pink'
+                    : 'bg-slate-50 dark:bg-card-gradient border-slate-200 dark:border-white/10'
+        }`;
+        
+        const buttonClasses = `w-full font-bold py-3 px-4 rounded-lg transition-opacity hover:opacity-90 ${
+            isPopular || isCustom
+                ? 'bg-button-gradient text-white' 
+                : 'bg-slate-200 hover:bg-slate-300 dark:bg-dark-bg dark:text-white dark:hover:bg-dark-bg/70'
+        }`;
 
         return React.createElement('div', { className: cardClasses },
             isPopular && React.createElement('div', { className: 'absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-purple text-white text-xs font-bold px-3 py-1 rounded-full' }, t.mostPopular),
@@ -122,7 +134,7 @@ const Pricing = ({ language, setView, currentUser, onLoginClick }) => {
             ),
             React.createElement('button', {
                 onClick: () => handleChoosePlan(plan),
-                className: `w-full font-bold py-3 px-4 rounded-lg transition-opacity hover:opacity-90 ${isPopular ? 'bg-button-gradient text-white' : 'bg-slate-200 hover:bg-slate-300 dark:bg-dark-bg dark:text-white dark:hover:bg-dark-bg/70'}`
+                className: buttonClasses
             }, t[plan.buttonTextKey])
         );
     };

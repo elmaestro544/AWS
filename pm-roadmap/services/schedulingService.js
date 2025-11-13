@@ -1,6 +1,6 @@
 
+
 import { GoogleGenAI, Type } from "@google/genai";
-import { generateProjectPlan } from './planningService.js';
 
 // --- API Key and Client Management ---
 const geminiApiKey = window.process?.env?.API_KEY;
@@ -37,19 +37,15 @@ const ganttChartSchema = {
 
 // --- Service Function ---
 /**
- * Generates a full Gantt chart schedule from a high-level project objective.
- * @param {string} objective - The user's high-level project goal.
+ * Generates a full Gantt chart schedule from a project plan.
+ * @param {object} projectPlan - The structured project plan with WBS and milestones.
  * @returns {Promise<object>} A structured array of tasks for the Gantt chart.
  */
-export const generateScheduleFromObjective = async (objective) => {
+export const generateScheduleFromPlan = async (projectPlan) => {
     if (!geminiClient) {
         throw new Error("Gemini client is not initialized. Please check your API key.");
     }
     
-    // Step 1: Generate the foundational project plan.
-    const projectPlan = await generateProjectPlan(objective);
-
-    // Step 2: Formulate a prompt to convert the plan into a timed schedule.
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);

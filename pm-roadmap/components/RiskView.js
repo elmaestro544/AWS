@@ -1,26 +1,14 @@
 // components/RiskView.js
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { analyzeProjectRisks } from '../services/riskService.js';
-import { RiskIcon, Spinner } from './Shared.js';
+import { RiskIcon, Spinner, FeatureToolbar } from './Shared.js';
+import { i18n } from '../constants.js';
 
 // --- Sub-Components ---
-
-const IntroView = ({ onAnalyze }) => (
-    React.createElement('div', { className: 'text-center flex flex-col items-center animate-fade-in-up' },
-        React.createElement(RiskIcon, { className: 'h-16 w-16 text-slate-500' }),
-        React.createElement('h2', { className: 'text-3xl font-bold mt-4 mb-2 text-white' }, "Risk Intelligence Dashboard"),
-        React.createElement('p', { className: 'max-w-md text-slate-400 mb-6' }, "Detect risks early as AI scans project data, highlights critical issues, and suggests mitigation strategies to keep delivery on track."),
-        React.createElement('button', {
-            onClick: onAnalyze,
-            className: "px-6 py-3 font-semibold text-white bg-cta-gradient rounded-lg shadow-lg shadow-glow-purple transition-opacity transform hover:scale-105"
-        }, "Analyze Project Risks")
-    )
-);
-
 const LoadingView = () => (
      React.createElement('div', { className: 'text-center flex flex-col items-center' },
-        React.createElement(RiskIcon, { className: 'h-16 w-16 animate-pulse' }),
+        React.createElement(RiskIcon, { className: 'h-16 w-16 animate-pulse text-slate-500' }),
         React.createElement('h2', { className: 'text-3xl font-bold mt-4 mb-2 text-white' }, "Analyzing Risks..."),
         React.createElement('p', { className: 'text-slate-400 mb-8' }, "AI is scanning project data and identifying potential issues."),
         React.createElement(Spinner, { size: '12' })
@@ -155,7 +143,7 @@ const RiskMatrix = ({ risks }) => {
 };
 
 
-const ResultsView = ({ data, onReset }) => {
+const ResultsView = ({ data }) => {
     const [selectedRiskId, setSelectedRiskId] = useState(null);
     const risks = data.risks || [];
 
@@ -167,15 +155,7 @@ const ResultsView = ({ data, onReset }) => {
 
     const selectedRisk = useMemo(() => risks.find(r => r.id === selectedRiskId), [risks, selectedRiskId]);
 
-    return React.createElement('div', { className: 'w-full h-full flex flex-col p-6 gap-6 animate-fade-in-up' },
-        // Header
-        React.createElement('div', { className: 'flex-shrink-0 flex justify-between items-center' },
-            React.createElement('h2', { className: 'text-2xl font-bold text-white' }, "Risk & Issue"),
-            React.createElement('div', { className: 'flex items-center gap-2' },
-                 React.createElement('button', { className: 'px-4 py-2 text-sm font-semibold bg-brand-purple hover:opacity-90 rounded-md text-white' }, "Add risks"),
-                 React.createElement('button', { onClick: onReset, className: 'px-4 py-2 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md text-white' }, "Re-analyze")
-            )
-        ),
+    return React.createElement('div', { className: 'w-full h-full flex flex-col gap-6 animate-fade-in-up' },
         // Main Content Grid
         React.createElement('div', { className: 'flex-grow grid grid-cols-3 grid-rows-[auto,1fr] gap-6 min-h-0' },
             // Risk Analysis Panel
@@ -205,51 +185,43 @@ const ResultsView = ({ data, onReset }) => {
 };
 
 
-const RiskView = () => {
-    const [viewState, setViewState] = useState('intro'); // intro, loading, results
-    const [riskData, setRiskData] = useState(null);
-    const [error, setError] = useState(null);
-
-    const handleAnalyze = async () => {
-        setViewState('loading');
-        setError(null);
-        setRiskData(null);
-        try {
-            const objective = "Launch a new direct-to-consumer e-commerce platform for a line of sustainable home goods, including website development, supply chain setup, and a digital marketing campaign, with a target launch in 4 months.";
-            const data = await analyzeProjectRisks(objective);
-            setRiskData(data);
-            setViewState('results');
-        } catch (err) {
-            setError(err.message || 'An unexpected error occurred.');
-            setViewState('intro');
+const RiskView = ({ language, projectData, onUpdateProject, isLoading, setIsLoading, error, setError }) => {
+    const t = i18n[language];
+    const fullscreenRef = useRef(null);
+    
+    useEffect(() => {
+        if (projectData.objective && !projectData.risk && !isLoading) {
+             const generate = async () => {
+                try {
+                    setIsLoading(true);
+                    setError(null);
+                    const risk = await analyzeProjectRisks(projectData.objective);
+                    onUpdateProject({ risk });
+                } catch (err) {
+                    setError(err.message || "Failed to generate risk analysis.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            generate();
         }
-    };
+    }, [projectData.objective, projectData.risk, isLoading, onUpdateProject, setIsLoading, setError]);
+
 
     const renderContent = () => {
-        if (error) {
-             return React.createElement('div', { className: "bg-red-500/10 border border-red-500/30 text-center p-4 rounded-md text-red-400" },
-                React.createElement('p', {className: "font-bold"}, "Analysis Failed"),
-                React.createElement('p', {className: "text-sm"}, error),
-                React.createElement('button', {
-                    onClick: () => { setError(null); setViewState('intro'); },
-                    className: "mt-4 px-4 py-2 bg-red-500/20 hover:bg-red-500/40 rounded-md"
-                }, "Try Again")
-             );
-        }
-
-        switch (viewState) {
-            case 'loading':
-                return React.createElement(LoadingView, null);
-            case 'results':
-                return React.createElement(ResultsView, { data: riskData, onReset: () => setViewState('intro') });
-            case 'intro':
-            default:
-                return React.createElement(IntroView, { onAnalyze: handleAnalyze });
-        }
+        if (isLoading) return React.createElement(LoadingView, null);
+        if (projectData.risk) return React.createElement(ResultsView, { data: projectData.risk });
+        return React.createElement(LoadingView, null);
     };
 
-    return React.createElement('div', { className: "h-full flex flex-col items-center justify-center" },
-        renderContent()
+    return React.createElement('div', { ref: fullscreenRef, className: "h-full flex flex-col text-white bg-dark-card printable-container" },
+        React.createElement('div', { className: 'flex-grow min-h-0 overflow-y-auto' },
+            React.createElement('div', {
+               className: 'p-6 printable-content h-full flex flex-col',
+            },
+                React.createElement('div', { className: 'h-full flex items-center justify-center' }, renderContent())
+            )
+        )
     );
 };
 
