@@ -1,11 +1,90 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { GoogleGenAI, Modality } from "@google/genai";
 import { i18n, Language, LANGUAGES, QUICK_PHRASES } from '../constants.js';
-import { Spinner, CopyIcon, SpeakerIcon, StopIcon, SwapIcon, UploadIcon, TrashIcon, HistoryIcon } from './Shared.js';
+import { Spinner, CopyIcon, SpeakerIcon, StopIcon, SwapIcon, UploadIcon, TrashIcon, HistoryIcon, MicrophoneIcon } from './Shared.js';
 import * as apiService from '../services/geminiService.js';
 import HistoryPanel from './HistoryPanel.js';
 
-// Helper functions for audio playback
+// --- Voice Visualizer Component (copied from SciGeniusChat) ---
+const VoiceVisualizer = ({ analyserNode, isRecording }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!isRecording || !analyserNode || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const canvasCtx = canvas.getContext('2d');
+    let animationFrameId;
+
+    const parent = canvas.parentElement;
+    if (parent) {
+      canvas.width = parent.offsetWidth;
+      canvas.height = parent.offsetHeight;
+    }
+
+    analyserNode.fftSize = 512;
+    const bufferLength = analyserNode.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const draw = () => {
+      animationFrameId = requestAnimationFrame(draw);
+      analyserNode.getByteFrequencyData(dataArray);
+
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+      
+      const barGradient = canvasCtx.createLinearGradient(0, 0, 0, canvasHeight);
+      barGradient.addColorStop(0, '#ef4444');
+      barGradient.addColorStop(1, '#f87171');
+
+      canvasCtx.fillStyle = barGradient;
+
+      const barWidth = (canvasWidth / bufferLength) * 2.5;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i] / 2;
+        canvasCtx.fillRect(x, canvasHeight - barHeight / 2, barWidth, barHeight);
+        x += barWidth + 1;
+      }
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isRecording, analyserNode]);
+
+  return React.createElement('canvas', { ref: canvasRef, className: "w-full h-full" });
+};
+
+
+// --- Audio Helper Functions ---
+function encode(bytes) {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function createBlob(data) {
+  const l = data.length;
+  const int16 = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    int16[i] = data[i] * 32768;
+  }
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: 'audio/pcm;rate=16000',
+  };
+}
+
 function decode(base64) {
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -43,9 +122,46 @@ const Translator = ({ language }) => {
   const [speakingFor, setSpeakingFor] = useState(null); // null, 'source', 'target'
   const [audioLoadingFor, setAudioLoadingFor] = useState(null); // null, 'source', 'target'
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  
   const fileInputRef = useRef(null);
   const audioContextRef = useRef(null);
-  const audioSourceRef = useRef(null);
+  const audioSourceRef = useRef(null); // For TTS playback
+  
+  // For voice input
+  const sessionPromiseRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const inputAudioContextRef = useRef(null);
+  const scriptProcessorRef = useRef(null);
+  const audioSourceNodeRef = useRef(null);
+  const analyserRef = useRef(null);
+  const currentTranscriptionRef = useRef('');
+
+  const cleanupVoiceSession = useCallback(() => {
+    setIsRecording(false);
+    if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+        mediaStreamRef.current = null;
+    }
+    if (scriptProcessorRef.current) {
+        scriptProcessorRef.current.onaudioprocess = null;
+        scriptProcessorRef.current.disconnect();
+        scriptProcessorRef.current = null;
+    }
+    if (analyserRef.current) {
+        analyserRef.current.disconnect();
+        analyserRef.current = null;
+    }
+    if (audioSourceNodeRef.current) {
+        audioSourceNodeRef.current.disconnect();
+        audioSourceNodeRef.current = null;
+    }
+    if (inputAudioContextRef.current && inputAudioContextRef.current.state !== 'closed') {
+        inputAudioContextRef.current.close().catch(console.error);
+        inputAudioContextRef.current = null;
+    }
+    sessionPromiseRef.current = null;
+  }, []);
 
   useEffect(() => {
     try {
@@ -57,6 +173,7 @@ const Translator = ({ language }) => {
       console.error("Failed to load translation history from localStorage", error);
     }
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+    
     return () => {
         if (audioSourceRef.current) {
             audioSourceRef.current.stop();
@@ -64,8 +181,12 @@ const Translator = ({ language }) => {
         if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
             audioContextRef.current.close();
         }
+        if (sessionPromiseRef.current) {
+            sessionPromiseRef.current.then(session => session.close());
+        }
+        cleanupVoiceSession();
     };
-  }, []);
+  }, [cleanupVoiceSession]);
 
   useEffect(() => {
     try {
@@ -197,6 +318,91 @@ const Translator = ({ language }) => {
       }
     }
   };
+  
+  const startRecording = async () => {
+    if (!apiService.isModelConfigured('gemini')) {
+        alert(t.apiKeyErrorForModel.replace('{modelName}', 'Google Gemini'));
+        return;
+    }
+
+    // Stop any active text-to-speech playback before starting recording.
+    if (audioSourceRef.current) {
+        audioSourceRef.current.stop();
+        setSpeakingFor(null);
+    }
+
+    try {
+        mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setIsRecording(true);
+        setSourceText('');
+        setTranslatedText('');
+        currentTranscriptionRef.current = '';
+
+        inputAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        analyserRef.current = inputAudioContextRef.current.createAnalyser();
+
+        const ai = new GoogleGenAI({ apiKey: window.process.env.API_KEY });
+        sessionPromiseRef.current = ai.live.connect({
+            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+            callbacks: {
+                onopen: () => {
+                    audioSourceNodeRef.current = inputAudioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
+                    scriptProcessorRef.current = inputAudioContextRef.current.createScriptProcessor(4096, 1, 1);
+                    scriptProcessorRef.current.onaudioprocess = (audioProcessingEvent) => {
+                        const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
+                        const pcmBlob = createBlob(inputData);
+                        sessionPromiseRef.current?.then((session) => {
+                            session.sendRealtimeInput({ media: pcmBlob });
+                        });
+                    };
+                    audioSourceNodeRef.current.connect(analyserRef.current);
+                    analyserRef.current.connect(scriptProcessorRef.current);
+                    scriptProcessorRef.current.connect(inputAudioContextRef.current.destination);
+                },
+                onmessage: (message) => {
+                    if (message.serverContent?.inputTranscription) {
+                        currentTranscriptionRef.current += message.serverContent.inputTranscription.text;
+                        setSourceText(currentTranscriptionRef.current);
+                    }
+                },
+                onerror: (e) => { 
+                    console.error('Live session error:', e); 
+                    cleanupVoiceSession();
+                },
+                onclose: () => {
+                    const finalTranscription = currentTranscriptionRef.current.trim();
+                    cleanupVoiceSession();
+                    if (finalTranscription) {
+                        handleTranslate(finalTranscription);
+                    }
+                },
+            },
+            config: { 
+                inputAudioTranscription: {},
+                systemInstruction: 'You are a silent transcriber. Your only job is to listen and transcribe the user\'s speech. Do not generate any spoken response.',
+                responseModalities: [Modality.AUDIO]
+            },
+        });
+
+    } catch (error) {
+        console.error("Failed to start voice session:", error);
+        alert("Could not start voice session. Please ensure microphone access is granted.");
+        cleanupVoiceSession();
+    }
+  };
+
+  const stopRecording = useCallback(() => {
+    if (sessionPromiseRef.current) {
+        sessionPromiseRef.current.then(session => {
+            session.close();
+        }).catch(err => {
+            console.error("Error closing session:", err);
+            cleanupVoiceSession();
+        });
+    } else {
+        cleanupVoiceSession();
+    }
+  }, [cleanupVoiceSession]);
 
   const handleFileChange = (e) => processFile(e.target.files?.[0]);
   const handleDrop = (e) => {
@@ -259,17 +465,26 @@ const Translator = ({ language }) => {
               value: sourceText, 
               onChange: (e) => setSourceText(e.target.value), 
               placeholder: t.enterText, 
-              className: `w-full h-full p-3 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brand-blue focus:outline-none resize-none ${language === 'ar' ? 'pl-12' : 'pr-12'}` 
+              disabled: isRecording,
+              className: `w-full h-full p-3 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brand-blue focus:outline-none resize-none ${language === 'ar' ? 'pl-24' : 'pr-24'}` 
             }),
-            !isLoading && sourceText && React.createElement('div', { className: `absolute top-2 ${language === 'ar' ? 'left-2' : 'right-2'}` },
-              React.createElement('button', {
+            React.createElement('div', { className: `absolute top-2 ${language === 'ar' ? 'left-2' : 'right-2'} flex gap-2 z-10` },
+              !isLoading && !isRecording && sourceText && React.createElement('button', {
                   onClick: () => handleListen(sourceText, 'source'),
                   disabled: !!audioLoadingFor,
                   className: "h-8 w-8 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full hover:bg-black/10 dark:hover:bg-white/20 disabled:opacity-50"
               },
                   audioLoadingFor === 'source' ? React.createElement(Spinner, {size: '5'}) : (speakingFor === 'source' ? React.createElement(StopIcon, null) : React.createElement(SpeakerIcon, null))
-              )
-            )
+              ),
+              React.createElement('button', {
+                  onClick: isRecording ? stopRecording : startRecording,
+                  className: `h-8 w-8 flex items-center justify-center rounded-full transition-colors ${isRecording ? 'bg-brand-red text-white animate-pulse' : 'bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20'}`
+              }, isRecording ? React.createElement(StopIcon, null) : React.createElement(MicrophoneIcon, null))
+            ),
+             isRecording && React.createElement('div', { className: "absolute inset-0 bg-black/70 flex flex-col items-center justify-center rounded-xl p-2" },
+                React.createElement('div', { className: "w-full h-1/2" }, React.createElement(VoiceVisualizer, { analyserNode: analyserRef.current, isRecording: isRecording })),
+                React.createElement('span', { className: "text-white animate-pulse text-sm" }, "Listening...")
+             )
           ),
           React.createElement('div', { className: "w-full h-48 p-3 bg-slate-50 dark:bg-card-gradient border border-slate-200 dark:border-white/10 rounded-xl relative overflow-y-auto" },
             isLoading ? React.createElement('div', { className: "flex items-center justify-center h-full" }, React.createElement(Spinner, null)) : React.createElement('p', { className: `whitespace-pre-wrap ${language === 'ar' ? 'pl-24' : 'pr-24'}` }, translatedText),
@@ -287,7 +502,7 @@ const Translator = ({ language }) => {
         ),
         // Translate Button & Confidence
         React.createElement('div', { className: "flex flex-col sm:flex-row items-center gap-4" },
-            React.createElement('button', { onClick: () => handleTranslate(sourceText), disabled: isLoading || !sourceText.trim(), className: "w-full sm:w-auto flex-grow bg-brand-red hover:bg-red-500 disabled:bg-slate-400 dark:disabled:bg-slate-600 text-white font-bold py-3 px-8 rounded-full transition-colors" },
+            React.createElement('button', { onClick: () => handleTranslate(sourceText), disabled: isLoading || !sourceText.trim() || isRecording, className: "w-full sm:w-auto flex-grow bg-brand-red hover:bg-red-500 disabled:bg-slate-400 dark:disabled:bg-slate-600 text-white font-bold py-3 px-8 rounded-full transition-colors" },
                 isLoading ? t.translating : t.translate
             ),
             confidence > 0 && React.createElement('div', { className: "text-sm text-slate-500 dark:text-brand-text-light" }, `${t.confidenceScore}: ${confidence}%`)

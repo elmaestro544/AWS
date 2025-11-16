@@ -30,6 +30,14 @@ const Dashboard = ({ language, setView, currentUser, theme, activeService, needs
   const t = i18n[language];
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
+  const handleServiceClick = (serviceId) => {
+    setView(serviceId);
+    // On large screens, collapse the sidebar for a better view of the content.
+    if (window.innerWidth >= 1024) { // lg breakpoint
+      setIsSidebarExpanded(false);
+    }
+  };
+
   const renderActiveService = () => {
     if (needsAuth) {
         return React.createElement(AuthRequired, {
@@ -101,12 +109,7 @@ const Dashboard = ({ language, setView, currentUser, theme, activeService, needs
                 if (index === 0) {
                     return React.createElement('div', { key: service.id, className: "relative group" },
                         React.createElement('button', {
-                            onClick: () => {
-                                setView(service.id);
-                                if (!isSidebarExpanded) {
-                                    setIsSidebarExpanded(true);
-                                }
-                            },
+                            onClick: () => handleServiceClick(service.id),
                             className: getButtonClasses(isActive)
                         }, buttonContent),
                         // Tooltip for collapsed state
@@ -132,7 +135,7 @@ const Dashboard = ({ language, setView, currentUser, theme, activeService, needs
                 return React.createElement('div', { key: service.id, className: "relative group" },
                     React.createElement('button', {
                         key: service.id,
-                        onClick: () => setView(service.id),
+                        onClick: () => handleServiceClick(service.id),
                         className: getButtonClasses(isActive)
                     }, buttonContent),
                     // Tooltip for collapsed state

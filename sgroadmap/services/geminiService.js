@@ -519,10 +519,18 @@ export const generateResearchContent = async (topic, templateId, language) => {
     });
 };
 
-export const generatePresentationOutline = async ({ method, content, slideCount, language }) => {
+export const generatePresentationOutline = async ({ method, content, slideCount, language, amount }) => {
     if (!geminiClient) throw new Error("Gemini client not initialized.");
 
-    const systemInstruction = `You are an expert presentation creator. Your task is to generate a comprehensive and structured outline for a presentation. The output must be a valid JSON object. The language of the content should be ${language === 'ar' ? 'Arabic' : 'English'}.
+    const amountInstructions = {
+        minimal: "Keep content points extremely brief, ideally 1-5 words per point. Use keywords and short phrases.",
+        concise: "Keep content points concise, typically a short phrase or sentence fragment around 5-10 words.",
+        detailed: "Provide detailed bullet points, forming complete but succinct sentences, around 10-20 words each.",
+        extensive: "Provide comprehensive, multi-sentence, or even short paragraph-like bullet points, with 20+ words."
+    };
+
+    const systemInstruction = `You are an expert presentation creator. Your task is to generate a comprehensive and structured outline for a presentation. The output must be a valid JSON object. The language of the content should be ${LANGUAGES.find(l => l.code === language)?.name || 'English'}.
+${amountInstructions[amount] || amountInstructions['concise']}
 The JSON object must have a key "slides" which is an array of objects. Each slide object must contain:
 - "slideNumber" (integer)
 - "title" (string, a concise title for the slide)
@@ -532,6 +540,29 @@ The JSON object must have a key "slides" which is an array of objects. Each slid
 IMPORTANT: The second slide (slideNumber: 2) MUST be an 'agenda' or 'table_of_contents' slide, listing the main topics or sections that will be covered in the following slides.
 
 CRITICAL: Your entire response must be ONLY the raw JSON object. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.`;
+
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            slides: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        slideNumber: { type: Type.INTEGER },
+                        title: { type: Type.STRING },
+                        type: { type: Type.STRING },
+                        content: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
+                    },
+                    required: ["slideNumber", "title", "type", "content"]
+                }
+            }
+        },
+        required: ["slides"]
+    };
 
     let prompt = `Please create a presentation outline with approximately ${slideCount} slides.\n`;
     switch (method) {
@@ -551,7 +582,11 @@ CRITICAL: Your entire response must be ONLY the raw JSON object. Do not add any 
     const result = await geminiClient.models.generateContent({
         model: textModel,
         contents: prompt,
-        config: { systemInstruction, responseMimeType: 'application/json' }
+        config: { 
+            systemInstruction, 
+            responseMimeType: 'application/json',
+            responseSchema
+        }
     });
 
     let text = result.text.trim();
@@ -566,24 +601,32 @@ CRITICAL: Your entire response must be ONLY the raw JSON object. Do not add any 
     return text;
 };
 
-export const generateFullPresentationContent = async (outlineJson, language) => {
+export const generateFullPresentationContent = async (outlineJson, language, amount) => {
     if (!geminiClient) throw new Error("Gemini client not initialized.");
+    
+    const amountInstructions = {
+        minimal: "Expand on the bullet points very briefly. Use short phrases and keywords. Paragraphs should be 1-2 sentences max.",
+        concise: "Expand on the bullet points concisely. Paragraphs should be 2-3 short sentences. Keep it direct and to the point.",
+        detailed: "Expand on the bullet points with detailed explanations. Paragraphs can be 3-5 sentences long, providing good context and information.",
+        extensive: "Expand on the bullet points comprehensively. Write detailed, multi-sentence paragraphs for each point, exploring the topic in depth."
+    };
 
-    const systemInstruction = `You are an expert presentation content writer. Your task is to expand a given presentation outline into full, engaging slide content. The output must be a valid JSON object, mirroring the input structure. The language of the content should be ${language === 'ar' ? 'Arabic' : 'English'}.
+    const systemInstruction = `You are an expert presentation content writer. Your task is to expand a given presentation outline into full, engaging slide content. The output must be a valid JSON object, mirroring the input structure. The language of the content must be ${LANGUAGES.find(l => l.code === language)?.name || 'English'}.
+When expanding the content, adhere to the following verbosity level: ${amountInstructions[amount] || amountInstructions['concise']}
 
 For each slide object in the input, you must:
 1.  Keep the original "slideNumber", "title", and "type".
-2.  Add a new key "speakerNotes" (string) containing concise notes for the presenter for that slide.
-3.  For the "content" key, create an array of content block objects. Each object must have a "type" key. Make the content visually rich by using different types. Supported types are:
+2.  Add a new key "speakerNotes" (string) containing concise, helpful notes for the presenter for that slide.
+3.  For the "content" key, create a rich and varied array of content block objects. Each object must have a "type" key. Use a mix of types to make the slides visually interesting and easy to understand. Supported types are:
     - 'paragraph': For a block of text. The object must also have a "text" key (string).
     - 'bullet': For a standard bullet point. The object must also have a "text" key (string).
     - 'table': To display structured data. The object must also have "headers" (an array of strings) and "rows" (an array of arrays of strings).
-    - 'visual_suggestion': For suggesting a visual element. The object must have a "description" key (string) describing the suggested icon, diagram, or image (e.g., "An icon of a magnifying glass over a document").
-    - 'infographic_point': For a key statistic or data point. The object must have "title" (string), "value" (string, e.g., '75%' or '3.5x'), and "description" (string).
+    - 'visual_suggestion': For suggesting a visual element. The object must have a "description" key (string). Describe icons, diagrams, photos, or **charts** (e.g., "A bar chart comparing sales figures across three regions" or "A line graph showing user growth over the last year").
+    - 'infographic_point': For a key statistic or data point. Use this for impactful numbers. The object must have "title" (string), "value" (string, e.g., '75%' or '3.5x'), and "description" (string).
 
-CRITICAL: Your entire response must be ONLY the raw JSON object. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.`;
+CRITICAL: Aim for a good variety of content blocks on each slide where appropriate. Don't use only paragraphs and bullets. Incorporate tables, infographic points, and visual suggestions to break up text. Your entire response must be ONLY the raw JSON object. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.`;
 
-    const prompt = `Based on the following presentation outline, please generate the full content and speaker notes for each slide:\n\n${outlineJson}`;
+    const prompt = `Based on the following presentation outline, please generate the full content and speaker notes for each slide. The content verbosity should be '${amount}':\n\n${outlineJson}`;
 
     const result = await geminiClient.models.generateContent({
         model: textModel,

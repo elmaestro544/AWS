@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { i18n, CONTENT_TYPES, TONES } from '../constants.js';
-import { Spinner, CopyIcon, SpeakerIcon, StopIcon } from './Shared.js';
+import { Spinner, CopyIcon, SpeakerIcon, StopIcon, DownloadIcon } from './Shared.js';
 import * as apiService from '../services/geminiService.js';
 
 // Helper functions for audio playback
@@ -38,6 +38,7 @@ const ContentCreator = ({ language }) => {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [isAudioDownloading, setIsAudioDownloading] = useState(false);
 
   const audioContextRef = useRef(null);
   const audioSourceRef = useRef(null);
@@ -127,15 +128,83 @@ const ContentCreator = ({ language }) => {
     }
   };
 
-  const SelectControl = ({ label, value, onChange, options }) => (
+  const handleDownloadAudio = async () => {
+    if (!generatedContent || isAudioDownloading) return;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = generatedContent;
+    const textToSpeak = tempDiv.textContent || tempDiv.innerText || "";
+    if (!textToSpeak.trim()) return;
+
+    setIsAudioDownloading(true);
+
+    try {
+        const base64Audio = await apiService.generateSpeech(textToSpeak);
+        const pcmData = decode(base64Audio);
+
+        const writeString = (view, offset, string) => {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        };
+
+        const sampleRate = 24000;
+        const numChannels = 1;
+        const bitsPerSample = 16;
+        const dataSize = pcmData.length;
+        
+        const buffer = new ArrayBuffer(44 + dataSize);
+        const view = new DataView(buffer);
+
+        // RIFF chunk descriptor
+        writeString(view, 0, 'RIFF');
+        view.setUint32(4, 36 + dataSize, true);
+        writeString(view, 8, 'WAVE');
+        // "fmt " sub-chunk
+        writeString(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); 
+        view.setUint16(22, numChannels, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * numChannels * (bitsPerSample / 8), true);
+        view.setUint16(32, numChannels * (bitsPerSample / 8), true);
+        view.setUint16(34, bitsPerSample, true);
+        // "data" sub-chunk
+        writeString(view, 36, 'data');
+        view.setUint32(40, dataSize, true);
+
+        for (let i = 0; i < pcmData.length; i++) {
+            view.setUint8(44 + i, pcmData[i]);
+        }
+
+        const blob = new Blob([view], { type: 'audio/wav' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'SciGenius_Audio.wav';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+    } catch (error) {
+        console.error("Error downloading audio:", error);
+        alert(`Could not download audio: ${error.message}`);
+    } finally {
+        setIsAudioDownloading(false);
+    }
+  };
+
+
+  const ButtonGroup = ({ label, value, onChange, options }) => (
     React.createElement('div', null,
-      React.createElement('label', { className: "block text-sm font-medium text-slate-500 dark:text-brand-text-light mb-1" }, label),
-      React.createElement('select', {
-        value: value,
-        onChange: e => onChange(e.target.value),
-        className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none"
-      },
-        options.map(option => React.createElement('option', { key: option.id, value: option.id }, language === 'ar' ? option.ar : option.en))
+      React.createElement('label', { className: "block text-sm font-medium text-slate-500 dark:text-brand-text-light mb-2" }, label),
+      React.createElement('div', { className: "flex flex-wrap gap-2" },
+        options.map(option => React.createElement('button', {
+          key: option.id,
+          onClick: () => onChange(option.id),
+          className: `px-3 py-1.5 text-sm font-semibold rounded-full transition-colors ${value === option.id ? 'bg-brand-red text-white shadow-md' : 'bg-slate-200 dark:bg-card-gradient text-slate-700 dark:text-brand-text-light hover:bg-slate-300 dark:hover:bg-brand-blue/50'}`
+        }, language === 'ar' ? option.ar : option.en))
       )
     )
   );
@@ -155,13 +224,13 @@ const ContentCreator = ({ language }) => {
           placeholder: t.enterTopic,
           className: "w-full h-48 p-3 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brand-blue focus:outline-none resize-none"
         }),
-        React.createElement(SelectControl, {
+        React.createElement(ButtonGroup, {
           label: t.contentType,
           value: contentType,
           onChange: setContentType,
           options: CONTENT_TYPES
         }),
-        React.createElement(SelectControl, {
+        React.createElement(ButtonGroup, {
           label: t.tone,
           value: tone,
           onChange: setTone,
@@ -185,9 +254,14 @@ const ContentCreator = ({ language }) => {
             },
               React.createElement('button', {
                   onClick: handleListen,
-                  disabled: isAudioLoading,
+                  disabled: isAudioLoading || isAudioDownloading,
                   className: 'flex items-center justify-center h-7 w-7 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 p-1.5 rounded-full disabled:opacity-50'
               }, isAudioLoading ? React.createElement(Spinner, {size: '4'}) : (isSpeaking ? React.createElement(StopIcon, {className: "h-4 w-4"}) : React.createElement(SpeakerIcon, {className: "h-4 w-4"}))),
+              React.createElement('button', {
+                onClick: handleDownloadAudio,
+                disabled: isAudioDownloading || isSpeaking,
+                className: 'flex items-center justify-center h-7 w-7 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 p-1.5 rounded-full disabled:opacity-50'
+              }, isAudioDownloading ? React.createElement(Spinner, { size: '4' }) : React.createElement(DownloadIcon, { className: 'h-4 w-4' })),
               React.createElement('button', {
                 onClick: handleCopy,
                 className: 'flex items-center bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs text-slate-700 dark:text-white py-1 px-3 rounded-full transition-colors'

@@ -37,11 +37,10 @@ const VoiceVisualizer = ({ analyserNode, isVoiceSessionActive }) => {
       canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
       
       const barGradient = canvasCtx.createLinearGradient(0, 0, canvasWidth, 0);
-      // Colors inspired by the user's image
-      barGradient.addColorStop(0, '#C44ED4');    // Magenta/Purple
-      barGradient.addColorStop(0.3, '#4E7AD4');  // Blue
-      barGradient.addColorStop(0.7, '#D44E4E'); // Red
-      barGradient.addColorStop(1, '#A14E4E');    // Darker Red
+      barGradient.addColorStop(0, '#C44ED4');
+      barGradient.addColorStop(0.3, '#4E7AD4');
+      barGradient.addColorStop(0.7, '#D44E4E');
+      barGradient.addColorStop(1, '#A14E4E');
 
       canvasCtx.fillStyle = barGradient;
 
@@ -202,11 +201,13 @@ const SciGeniusChat = ({ language, currentUser }) => {
         setSpeakingMessageIndex(null);
     }
 
+    const firstMessage = messages.length === 1;
     const userMessage = { sender: 'user', text: messageText };
     if (file) {
         userMessage.file = file.name;
     }
-    setMessages(prev => [...prev, userMessage]);
+
+    setMessages(prev => firstMessage ? [userMessage] : [...prev, userMessage]);
     setUserInput('');
     const currentFile = file;
     setFile(null); 
@@ -246,7 +247,7 @@ const SciGeniusChat = ({ language, currentUser }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [chat, file, useWebSearch, isLoading, t.errorOccurred, currentUser]);
+  }, [chat, file, useWebSearch, isLoading, t.errorOccurred, currentUser, messages.length]);
 
   const handleListen = async (text, index) => {
     if (!text) return;
@@ -320,7 +321,6 @@ const SciGeniusChat = ({ language, currentUser }) => {
                             session.sendRealtimeInput({ media: pcmBlob });
                         });
                     };
-                    // Connect source -> analyser -> scriptProcessor -> destination
                     audioSourceNodeRef.current.connect(analyserRef.current);
                     analyserRef.current.connect(scriptProcessorRef.current);
                     scriptProcessorRef.current.connect(inputAudioContextRef.current.destination);
@@ -359,10 +359,20 @@ const SciGeniusChat = ({ language, currentUser }) => {
                         const userInputText = currentInputTranscriptionRef.current.trim();
                         const modelOutputText = currentOutputTranscriptionRef.current.trim();
                         if (userInputText || modelOutputText) {
-                            setMessages(prev => [...prev, 
-                                { sender: 'user', text: userInputText },
-                                { sender: 'model', text: modelOutputText }
-                            ]);
+                             if (messages.length === 1 && messages[0].text === t.homeDescription) {
+                                setMessages([]); // Clear initial message
+                                setTimeout(() => { // Use timeout to ensure state update before adding new messages
+                                    setMessages([ 
+                                        { sender: 'user', text: userInputText },
+                                        { sender: 'model', text: modelOutputText }
+                                    ]);
+                                }, 0);
+                            } else {
+                                setMessages(prev => [...prev, 
+                                    { sender: 'user', text: userInputText },
+                                    { sender: 'model', text: modelOutputText }
+                                ]);
+                            }
                         }
                         currentInputTranscriptionRef.current = '';
                         currentOutputTranscriptionRef.current = '';
@@ -449,23 +459,32 @@ const SciGeniusChat = ({ language, currentUser }) => {
     )
   );
 
-  return React.createElement('div', { className: "max-w-4xl mx-auto relative" },
-    currentUser && React.createElement('button', {
-        onClick: () => setIsHistoryOpen(true),
-        'aria-label': t.history,
-        className: `absolute top-0 ${language === 'ar' ? 'left-0' : 'right-0'} z-10 p-2 text-slate-500 dark:text-brand-text-light hover:bg-slate-200 dark:hover:bg-white/20 rounded-full transition-colors`
-    },
-      React.createElement(HistoryIcon, null)
-    ),
+  return React.createElement('div', { className: "max-w-4xl mx-auto" },
     React.createElement('div', { className: "text-center mb-6" },
       React.createElement('h2', { className: "text-3xl font-extrabold text-slate-900 dark:text-brand-text" }, t.chatTitle),
       React.createElement('p', { className: "text-lg text-slate-500 dark:text-brand-text-light mt-2" }, t.chatDescription)
     ),
-    React.createElement('div', null,
-        React.createElement('div', { className: "flex flex-col h-[calc(100vh-240px)]" },
-            React.createElement('div', { className: "flex flex-col flex-grow bg-white dark:bg-card-gradient rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-glow-blue" },
-            React.createElement('div', { ref: chatContainerRef, className: "flex-grow p-4 space-y-4 overflow-y-auto" },
-                messages.map((msg, index) => (
+    React.createElement('div', { className: "relative" },
+        currentUser && React.createElement('button', {
+            onClick: () => setIsHistoryOpen(true),
+            'aria-label': t.history,
+            className: `absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} z-20 p-2 text-white/70 hover:text-white rounded-full transition-colors`
+        }, React.createElement(HistoryIcon, null)),
+
+        React.createElement('div', {
+            className: "flex flex-col bg-card-gradient rounded-2xl shadow-2xl dark:shadow-glow-blue border border-white/10 overflow-hidden"
+        },
+            React.createElement('div', { ref: chatContainerRef, className: "flex-grow p-4 space-y-4 overflow-y-auto h-[calc(100vh-450px)] min-h-[300px]" },
+                (messages.length === 1 && messages[0].sender === 'model' && messages[0].text === t.homeDescription) ?
+                React.createElement('div', { className: "flex flex-col items-center justify-center h-full text-center p-4 animate-slide-in-up" },
+                    React.createElement('img', { 
+                        src: 'https://images.pexels.com/photos/2156881/pexels-photo-2156881.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+                        alt: 'SciGenius Avatar', 
+                        className: 'w-48 h-48 md:w-56 md:h-56 rounded-full mx-auto mb-6 object-cover' 
+                    }),
+                    React.createElement('p', { className: "text-lg text-slate-300 dark:text-brand-text-light" }, t.homeDescription)
+                )
+                : messages.map((msg, index) => (
                 React.createElement('div', { key: index, className: `flex ${msg.sender === 'user' ? (language === 'ar' ? 'justify-start' : 'justify-end') : (language === 'ar' ? 'justify-end' : 'justify-start')}` },
                     React.createElement('div', { className: `relative max-w-xl p-3 rounded-2xl shadow-md ${msg.sender === 'user' ? 'bg-brand-blue text-white' : 'bg-slate-200 dark:bg-dark-bg text-slate-800 dark:text-brand-text'}` },
                     msg.sender === 'model' && msg.text && React.createElement('button', {
@@ -502,18 +521,12 @@ const SciGeniusChat = ({ language, currentUser }) => {
                     )
                 )
                 )
-            ),
-            React.createElement('div', { className: "p-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-brand-dark/30" },
-                !isGeminiConfigured && React.createElement('div', { className: "text-center bg-red-500/10 p-2 rounded-md mb-2 text-xs text-brand-red font-semibold" },
-                    t.apiKeyErrorForModel.replace('{modelName}', 'Google Gemini')
-                ),
-                file && !isVoiceSessionActive && React.createElement('div', { className: "flex items-center justify-between bg-slate-200 dark:bg-black/20 text-sm py-1 px-3 rounded-md mb-2" },
-                    React.createElement('span', { className: "truncate" }, file.name),
-                    React.createElement('button', { onClick: () => setFile(null) }, React.createElement(CloseIcon, { className: "h-4 w-4" }))
-                ),
-                
+            )
+        ),
+        React.createElement('div', { className: "mt-4" },
+            React.createElement('div', { className: 'bg-white dark:bg-dark-bg p-3 rounded-2xl shadow-lg border border-slate-200 dark:border-white/10' },
                 isVoiceSessionActive ? 
-                React.createElement('div', { className: "flex items-center justify-between bg-slate-200 dark:bg-black/20 rounded-full p-2 h-14" },
+                React.createElement('div', { className: "flex items-center justify-between bg-slate-100 dark:bg-black/20 rounded-full p-2 h-14" },
                     React.createElement('div', { className: 'flex-grow flex items-center gap-4 px-2'},
                         React.createElement('div', { className: 'w-2/5 h-full' }, 
                             React.createElement(VoiceVisualizer, { analyserNode: analyserRef.current, isVoiceSessionActive: isVoiceSessionActive })
@@ -529,27 +542,33 @@ const SciGeniusChat = ({ language, currentUser }) => {
                 )
                 :
                 React.createElement(React.Fragment, null,
+                    !isGeminiConfigured && React.createElement('div', { className: "text-center bg-red-500/10 p-2 rounded-md mb-2 text-xs text-brand-red font-semibold" },
+                        t.apiKeyErrorForModel.replace('{modelName}', 'Google Gemini')
+                    ),
                     React.createElement('div', { className: `relative flex items-center ${language === 'ar' ? 'flex-row-reverse' : ''}` },
                         React.createElement('button', {
                             onClick: startVoiceSession,
                             disabled: !isGeminiConfigured,
-                            className: `absolute h-8 w-8 flex items-center justify-center disabled:opacity-50 ${language === 'ar' ? 'right-2' : 'left-2'}`
-                        }, React.createElement(MicrophoneIcon, { className: 'text-slate-500 dark:text-brand-text-light' })),
+                            className: 'p-2 text-slate-500 dark:text-brand-text-light disabled:opacity-50'
+                        }, React.createElement(MicrophoneIcon, null)),
                         React.createElement('input', {
                             type: "text", value: userInput, onChange: (e) => setUserInput(e.target.value),
                             onKeyDown: (e) => e.key === 'Enter' && handleSendMessage(userInput), placeholder: t.askPlaceholder,
-                            className: "w-full bg-slate-100 dark:bg-brand-dark border border-slate-300 dark:border-white/20 rounded-full py-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none transition-all shadow-inner placeholder-slate-400 dark:placeholder-slate-500",
-                            style: language === 'ar' ? { paddingLeft: '3.5rem', paddingRight: '3.5rem' } : { paddingLeft: '3.5rem', paddingRight: '3.5rem' },
+                            className: "w-full bg-transparent p-2 text-slate-900 dark:text-white focus:outline-none placeholder-slate-500",
                             disabled: isLoading || !isGeminiConfigured
                         }),
                         React.createElement('button', {
                             onClick: () => handleSendMessage(userInput), disabled: !userInput.trim() || isLoading || !isGeminiConfigured,
-                            className: `absolute h-8 w-8 rounded-full flex items-center justify-center bg-brand-red hover:bg-red-500 disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed transition-all ${language === 'ar' ? 'left-2' : 'right-2'}`
+                            className: `h-10 w-10 rounded-full flex items-center justify-center bg-slate-800 dark:bg-brand-blue hover:bg-slate-900 dark:hover:bg-blue-800 disabled:bg-slate-400 text-white transition-colors`
                         }, React.createElement(SendIcon, null))
                     ),
-                    React.createElement('div', { className: `flex items-center justify-between mt-2 px-2 ${language === 'ar' ? 'flex-row-reverse' : ''}` },
-                        React.createElement('button', { onClick: () => fileInputRef.current?.click(), className: "flex items-center gap-2 text-sm text-slate-500 dark:text-brand-text-light hover:text-slate-900 dark:hover:text-white transition-colors"},
-                            React.createElement(AttachIcon, { className: "h-5 w-5"}), t.attachFile
+                    file && React.createElement('div', { className: "flex items-center justify-between bg-slate-100 dark:bg-black/20 text-sm py-1 px-3 rounded-md mt-2 mx-2" },
+                        React.createElement('span', { className: "truncate" }, file.name),
+                        React.createElement('button', { onClick: () => setFile(null) }, React.createElement(CloseIcon, { className: "h-4 w-4" }))
+                    ),
+                    React.createElement('div', { className: `flex justify-between items-center mt-2 pt-2 border-t border-slate-200 dark:border-white/10 px-2 ${language === 'ar' ? 'flex-row-reverse' : ''}` },
+                        React.createElement('button', { onClick: () => fileInputRef.current?.click(), className: "flex items-center gap-2 text-sm text-slate-500 dark:text-brand-text-light hover:text-slate-900 dark:hover:text-white"},
+                            React.createElement(AttachIcon, { className: "h-5 w-5" }), t.attachFile
                         ),
                         React.createElement('input', { type: "file", ref: fileInputRef, onChange: handleFileChange, className: "hidden" }),
                         React.createElement('div', { className: 'flex items-center gap-2' },
@@ -560,7 +579,6 @@ const SciGeniusChat = ({ language, currentUser }) => {
                         )
                     )
                 )
-            )
             )
         )
     ),

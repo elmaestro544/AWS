@@ -332,3 +332,28 @@ export const ErrorIcon = ({ className = "h-5 w-5" }) => (
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" })
     )
 );
+
+// --- New Icons for Presentation Generator ---
+export const ParagraphIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6h16M4 12h16M4 18h7" })
+);
+
+export const TableCellsIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 4h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2zm0 6h6m-6 4h6m-6 4h6M3 6h.01M3 10h.01M3 14h.01M3 18h.01M21 6h-.01M21 10h-.01M21 14h-.01M21 18h-.01" })
+);
+
+export const SparklesIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M5 3v4M3 5h4M6 17v4m-2-2h4m-3-7V3m2 2h-4m1 11V9m2 2h-4m5 5v4m2-2h-4m1-11V3m2 2h-4" })
+);
+
+export const RectangleStackIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 6.878V6a2 2 0 012-2h10a2 2 0 012 2v7.122M6 12.878V18a2 2 0 002 2h10a2 2 0 002-2v-5.122M6 12.878L18 6" })
+);
+
+export const CheckCircleIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" })
+);
+
+export const QuestionMarkCircleIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
+);
