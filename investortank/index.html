@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestorTank - Where Startups Meet Opportunity</title>
+    <style>
+        /* Design System Variables */
+        :root {
+            --primary: #1a365d;
+            --secondary: #2c5282;
+            --accent: #00a8cc;
+            --background: #f7fafc;
+            --text: #2d3748;
+            --success: #48bb78;
+            --warning: #f6ad55;
+            --danger: #f56565;
+            --white: #ffffff;
+            --gray-100: #f7fafc;
+            --gray-200: #edf2f7;
+            --gray-300: #e2e8f0;
+            --gray-600: #718096;
+            --gray-800: #2d3748;
+            
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 40px;
+            --space-6: 48px;
+            
+            --radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background-color: var(--white);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-2) 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+            padding: var(--space-1);
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        
+        .nav-cta {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background-color: #0096b8;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: var(--space-6) var(--space-2);
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: var(--space-2);
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            margin-bottom: var(--space-4);
+            opacity: 0.95;
+        }
+        
+        .hero-cta {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 18px;
+        }
+        
+        .btn-white {
+            background-color: var(--white);
+            color: var(--primary);
+        }
+        
+        .btn-white:hover {
+            background-color: var(--gray-100);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: var(--space-6) var(--space-2);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: var(--space-4);
+            color: var(--primary);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-3);
+        }
+        
+        .feature-card {
+            background-color: var(--white);
+            padding: var(--space-3);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-2);
+        }
+        
+        .feature-card h3 {
+            margin-bottom: var(--space-1);
+            color: var(--primary);
+        }
+        
+        .feature-card p {
+            color: var(--gray-600);
+        }
+        
+        /* Trust Section */
+        .trust-section {
+            background-color: var(--white);
+            padding: var(--space-5) var(--space-2);
+        }
+        
+        .trust-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .trust-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            margin-top: var(--space-4);
+        }
+        
+        .stat {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .stat-number {
+            font-size: 42px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            color: var(--gray-600);
+            margin-top: var(--space-1);
+        }
+        
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            margin-top: var(--space-4);
+        }
+        
+        .badge {
+            background-color: var(--gray-100);
+            padding: var(--space-2);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Page Content Container */
+        .page-content {
+            display: none;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: var(--white);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+        }
+        
+        .sidebar-nav li {
+            margin-bottom: var(--space-1);
+        }
+        
+        .sidebar-nav a {
+            display: block;
+            padding: var(--space-2);
+            color: var(--text);
+            text-decoration: none;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+        
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background-color: var(--gray-100);
+            color: var(--accent);
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: var(--space-4);
+            overflow-y: auto;
+        }
+        
+        .dashboard-header {
+            margin-bottom: var(--space-4);
+        }
+        
+        .dashboard-header h1 {
+            color: var(--primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+        
+        .stat-card {
+            background-color: var(--white);
+            padding: var(--space-3);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .stat-card-title {
+            color: var(--gray-600);
+            font-size: 14px;
+            margin-bottom: var(--space-1);
+        }
+        
+        .stat-card-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* Cards */
+        .card {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .startup-card {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-3);
+            margin-bottom: var(--space-2);
+            transition: var(--transition);
+        }
+        
+        .startup-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .startup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--space-2);
+        }
+        
+        .startup-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .badge-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-seed {
+            background-color: rgba(72, 187, 120, 0.2);
+            color: var(--success);
+        }
+        
+        .badge-series {
+            background-color: rgba(0, 168, 204, 0.2);
+            color: var(--accent);
+        }
+        
+        /* Pitch Interface */
+        .pitch-interface {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-2);
+            height: calc(100vh - 150px);
+        }
+        
+        .video-area {
+            background-color: #1a1a1a;
+            border-radius: var(--radius);
+            padding: var(--space-2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-2);
+            flex: 1;
+        }
+        
+        .video-feed {
+            background-color: #2a2a2a;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 48px;
+        }
+        
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+        
+        .control-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+            padding: var(--space-2);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .control-btn.danger {
+            background-color: var(--danger);
+        }
+        
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+        
+        .panel-section {
+            background-color: var(--white);
+            border-radius: var(--radius);
+            padding: var(--space-2);
+            box-shadow: var(--shadow-sm);
+            overflow-y: auto;
+        }
+        
+        .panel-title {
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+            color: var(--primary);
+        }
+        
+        .reaction-buttons {
+            display: flex;
+            gap: var(--space-1);
+            margin-top: var(--space-2);
+        }
+        
+        .reaction-btn {
+            flex: 1;
+            padding: var(--space-1);
+            border-radius: var(--radius);
+            border: 2px solid var(--gray-300);
+            background-color: var(--white);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .reaction-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .reaction-btn.interested {
+            border-color: var(--success);
+            color: var(--success);
+        }
+        
+        .reaction-btn.more-info {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .reaction-btn.pass {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        
+        /* Deal Workspace */
+        .deal-workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+        }
+        
+        .conversation-thread {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            padding: var(--space-2);
+            margin-bottom: var(--space-2);
+            border-radius: var(--radius);
+            background-color: var(--gray-100);
+        }
+        
+        .message.sent {
+            background-color: rgba(0, 168, 204, 0.1);
+            margin-left: var(--space-4);
+        }
+        
+        .message-header {
+            font-weight: 600;
+            margin-bottom: var(--space-1);
+            color: var(--primary);
+        }
+        
+        .term-sheet {
+            background-color: var(--gray-100);
+            padding: var(--space-3);
+            border-radius: var(--radius);
+        }
+        
+        .term-field {
+            margin-bottom: var(--space-2);
+        }
+        
+        .term-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: var(--space-1);
+            color: var(--text);
+        }
+        
+        .term-field input {
+            width: 100%;
+            padding: var(--space-1);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-negotiation {
+            background-color: rgba(246, 173, 85, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-review {
+            background-color: rgba(0, 168, 204, 0.2);
+            color: var(--accent);
+        }
+        
+        .status-ready {
+            background-color: rgba(72, 187, 120, 0.2);
+            color: var(--success);
+        }
+        
+        /* Document Management */
+        .file-browser {
+            display: grid;
+            gap: var(--space-2);
+        }
+        
+        .folder {
+            background-color: var(--white);
+            padding: var(--space-2);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .folder:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .folder-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .document-list {
+            margin-top: var(--space-2);
+            padding-left: var(--space-4);
+        }
+        
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-1);
+            background-color: var(--gray-100);
+        }
+        
+        .document-info {
+            flex: 1;
+        }
+        
+        .document-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .document-meta {
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: var(--space-4);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .upload-area:hover {
+            border-color: var(--accent);
+            background-color: rgba(0, 168, 204, 0.05);
+        }
+        
+        /* Security Controls */
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-3);
+        }
+        
+        .toggle-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2);
+            background-color: var(--gray-100);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-2);
+        }
+        
+        .toggle-switch {
+            width: 50px;
+            height: 26px;
+            background-color: var(--gray-300);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .toggle-switch.active {
+            background-color: var(--success);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--white);
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: var(--transition);
+        }
+        
+        .toggle-switch.active::after {
+            left: 27px;
+        }
+        
+        .audit-log {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .audit-entry {
+            padding: var(--space-2);
+            border-left: 3px solid var(--accent);
+            margin-bottom: var(--space-2);
+            background-color: var(--gray-100);
+        }
+        
+        .audit-time {
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+        
+        /* User Flow Diagram */
+        .flow-diagram {
+            padding: var(--space-4);
+            background-color: var(--white);
+            border-radius: var(--radius);
+            overflow-x: auto;
+        }
+        
+        .flow-container {
+            min-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+        
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2);
+            align-items: center;
+        }
+        
+        .flow-step {
+            background-color: var(--accent);
+            color: var(--white);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .flow-step:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .flow-step.startup {
+            background-color: var(--primary);
+        }
+        
+        .flow-step.investor {
+            background-color: var(--secondary);
+        }
+        
+        .flow-arrow {
+            font-size: 24px;
+            color: var(--gray-600);
+        }
+        
+        .flow-details {
+            margin-top: var(--space-3);
+            padding: var(--space-3);
+            background-color: var(--gray-100);
+            border-radius: var(--radius);
+            display: none;
+        }
+        
+        .flow-details.active {
+            display: block;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+            }
+            
+            .dashboard {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .pitch-interface,
+            .deal-workspace {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-1 { margin-top: var(--space-1); }
+        .mt-2 { margin-top: var(--space-2); }
+        .mt-3 { margin-top: var(--space-3); }
+        .mt-4 { margin-top: var(--space-4); }
+        
+        .mb-1 { margin-bottom: var(--space-1); }
+        .mb-2 { margin-bottom: var(--space-2); }
+        .mb-3 { margin-bottom: var(--space-3); }
+        .mb-4 { margin-bottom: var(--space-4); }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="navigateTo('home')">InvestorTank</a>
+            <ul class="nav-links">
+                <li><a href="#" onclick="navigateTo('home')">Home</a></li>
+                <li><a href="#" onclick="navigateTo('userflow')">User Flow</a></li>
+                <li><a href="#" onclick="navigateTo('security')">Security</a></li>
+            </ul>
+            <div class="nav-cta">
+                <a href="#" class="btn btn-secondary" onclick="navigateTo('startup-dashboard')">Startup Login</a>
+                <a href="#" class="btn btn-primary" onclick="navigateTo('investor-dashboard')">Investor Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Homepage -->
+    <div id="home" class="page-content active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Connect. Pitch. Invest.</h1>
+                <p>Transform ideas into reality with InvestorTank - Where Startups Meet Opportunity</p>
+                <div class="hero-cta">
+                    <a href="#" class="btn btn-white btn-large" onclick="navigateTo('startup-dashboard')">I'm a Startup 🚀</a>
+                    <a href="#" class="btn btn-primary btn-large" onclick="navigateTo('investor-dashboard')">I'm an Investor 💼</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <h2 class="section-title">Platform Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎥</div>
+                    <h3>Live Pitch Sessions</h3>
+                    <p>Present your vision in real-time video sessions with multiple investors simultaneously</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure Deal Management</h3>
+                    <p>Enterprise-grade encryption and compliance for all your sensitive business data</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Smart Matching</h3>
+                    <p>AI-powered investor-startup compatibility based on industry, stage, and criteria</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Portfolio Tracking</h3>
+                    <p>Monitor investments and growth metrics with comprehensive analytics tools</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Section -->
+        <section class="trust-section">
+            <div class="trust-content">
+                <h2 class="section-title">Trusted by Innovators</h2>
+                <div class="trust-stats">
+                    <div class="stat">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Active Startups</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">200+</div>
+                        <div class="stat-label">Verified Investors</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">$50M+</div>
+                        <div class="stat-label">Total Funding</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">150+</div>
+                        <div class="stat-label">Successful Deals</div>
+                    </div>
+                </div>
+                <div class="security-badges">
+                    <div class="badge">🔒 256-bit AES Encryption</div>
+                    <div class="badge">✓ SOC 2 Type II Certified</div>
+                    <div class="badge">🛡️ GDPR Compliant</div>
+                    <div class="badge">🔐 Two-Factor Authentication</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Startup Dashboard -->
+    <div id="startup-dashboard" class="page-content">
+        <div class="dashboard">
+            <aside class="sidebar">
+                <h3 style="margin-bottom: 24px; color: var(--primary);">Startup Portal</h3>
+                <ul class="sidebar-nav">
+                    <li><a href="#" class="active">📊 Dashboard</a></li>
+                    <li><a href="#" onclick="navigateTo('pitch-interface')">🎤 My Pitches</a></li>
+                    <li><a href="#">👥 Investor Matches</a></li>
+                    <li><a href="#" onclick="navigateTo('documents')">📁 Documents</a></li>
+                    <li><a href="#">💬 Messages</a></li>
+                    <li><a href="#">⚙️ Settings</a></li>
+                </ul>
+            </aside>
+            <main class="main-content">
+                <div class="dashboard-header">
+                    <h1>Welcome back, Sarah Chen</h1>
+                    <p>TechFlow AI - Ready to make an impact</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-title">Active Pitches</div>
+                        <div class="stat-card-value">3</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Interested Investors</div>
+                        <div class="stat-card-value">12</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Documents Pending</div>
+                        <div class="stat-card-value">2</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Meetings Scheduled</div>
+                        <div class="stat-card-value">5</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Upcoming Pitch Sessions</h3>
+                        <a href="#" class="btn btn-primary" onclick="navigateTo('pitch-interface')">Join Session</a>
+                    </div>
+                    <div class="timeline">
+                        <div class="startup-card">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <div>
+                                    <strong>Tech Ventures Fund</strong>
+                                    <div style="color: var(--gray-600); font-size: 14px;">Today, 2:00 PM - 2:30 PM</div>
+                                </div>
+                                <span class="status-badge status-ready">Ready</span>
+                            </div>
+                            <p style="margin: 8px 0;">Panel of 3 investors - Focus on AI/ML startups</p>
+                        </div>
+                        <div class="startup-card">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <div>
+                                    <strong>Innovation Capital Partners</strong>
+                                    <div style="color: var(--gray-600); font-size: 14px;">Tomorrow, 10:00 AM - 10:30 AM</div>
+                                </div>
+                                <span class="status-badge status-review">Scheduled</span>
+                            </div>
+                            <p style="margin: 8px 0;">One-on-one session with Managing Partner</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Investor Interest</h3>
+                    </div>
+                    <div class="startup-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Michael Roberts</strong>
+                                <div style="color: var(--gray-600); font-size: 14px;">Requested pitch deck &amp; financials</div>
+                                <div style="color: var(--gray-600); font-size: 12px; margin-top: 4px;">2 hours ago</div>
+                            </div>
+                            <a href="#" class="btn btn-primary">Respond</a>
+                        </div>
+                    </div>
+                    <div class="startup-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Jennifer Martinez</strong>
+                                <div style="color: var(--gray-600); font-size: 14px;">Added to watchlist &amp; wants to schedule call</div>
+                                <div style="color: var(--gray-600); font-size: 12px; margin-top: 4px;">5 hours ago</div>
+                            </div>
+                            <a href="#" class="btn btn-primary">Schedule</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                    </div>
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                        <a href="#" class="btn btn-primary" onclick="navigateTo('documents')">📤 Upload Pitch Deck</a>
+                        <a href="#" class="btn btn-secondary" onclick="navigateTo('pitch-interface')">📅 Schedule Session</a>
+                        <a href="#" class="btn btn-secondary">📈 View Analytics</a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Investor Dashboard -->
+    <div id="investor-dashboard" class="page-content">
+        <div class="dashboard">
+            <aside class="sidebar">
+                <h3 style="margin-bottom: 24px; color: var(--primary);">Investor Portal</h3>
+                <ul class="sidebar-nav">
+                    <li><a href="#" class="active">📊 Dashboard</a></li>
+                    <li><a href="#">🔍 Discover</a></li>
+                    <li><a href="#" onclick="navigateTo('deal-negotiation')">🤝 My Deals</a></li>
+                    <li><a href="#">💼 Portfolio</a></li>
+                    <li><a href="#">💬 Messages</a></li>
+                    <li><a href="#">⚙️ Settings</a></li>
+                </ul>
+            </aside>
+            <main class="main-content">
+                <div class="dashboard-header">
+                    <h1>Welcome back, Michael Roberts</h1>
+                    <p>Your investment dashboard</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-title">Portfolio Value</div>
+                        <div class="stat-card-value">$2.4M</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Active Deals</div>
+                        <div class="stat-card-value">5</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Companies Watching</div>
+                        <div class="stat-card-value">8</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Pitch Sessions</div>
+                        <div class="stat-card-value">3</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Investment Opportunities</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <select style="padding: 8px; border-radius: var(--radius); border: 1px solid var(--gray-300);">
+                                <option>All Industries</option>
+                                <option>Healthcare</option>
+                                <option>CleanTech</option>
+                                <option>EdTech</option>
+                            </select>
+                            <select style="padding: 8px; border-radius: var(--radius); border: 1px solid var(--gray-300);">
+                                <option>All Stages</option>
+                                <option>Seed</option>
+                                <option>Series A</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="startup-card">
+                        <div class="startup-header">
+                            <div>
+                                <div class="startup-name">HealthTech Solutions</div>
+                                <div style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">Healthcare • Seed Stage</div>
+                            </div>
+                            <span class="badge-pill badge-seed">Seed</span>
+                        </div>
+                        <p style="margin: 12px 0;">AI-powered patient monitoring platform with real-time analytics and predictive health insights</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                            <div>
+                                <strong style="color: var(--accent); font-size: 18px;">$500K</strong>
+                                <span style="color: var(--gray-600); font-size: 14px;"> seeking</span>
+                            </div>
+                            <a href="#" class="btn btn-primary" onclick="navigateTo('pitch-interface')">Request Details</a>
+                        </div>
+                    </div>
+
+                    <div class="startup-card">
+                        <div class="startup-header">
+                            <div>
+                                <div class="startup-name">GreenEnergy Systems</div>
+                                <div style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">CleanTech • Series A</div>
+                            </div>
+                            <span class="badge-pill badge-series">Series A</span>
+                        </div>
+                        <p style="margin: 12px 0;">Smart grid optimization technology reducing energy waste by 30% through machine learning algorithms</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                            <div>
+                                <strong style="color: var(--accent); font-size: 18px;">$1.2M</strong>
+                                <span style="color: var(--gray-600); font-size: 14px;"> seeking</span>
+                            </div>
+                            <a href="#" class="btn btn-primary" onclick="navigateTo('pitch-interface')">Request Details</a>
+                        </div>
+                    </div>
+
+                    <div class="startup-card">
+                        <div class="startup-header">
+                            <div>
+                                <div class="startup-name">EduLearn Platform</div>
+                                <div style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">EdTech • Seed Stage</div>
+                            </div>
+                            <span class="badge-pill badge-seed">Seed</span>
+                        </div>
+                        <p style="margin: 12px 0;">Personalized learning management system with adaptive curriculum and student performance tracking</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                            <div>
+                                <strong style="color: var(--accent); font-size: 18px;">$750K</strong>
+                                <span style="color: var(--gray-600); font-size: 14px;"> seeking</span>
+                            </div>
+                            <a href="#" class="btn btn-primary" onclick="navigateTo('pitch-interface')">Request Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Upcoming Pitch Sessions</h3>
+                    </div>
+                    <div class="startup-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>TechFlow AI - Sarah Chen</strong>
+                                <div style="color: var(--gray-600); font-size: 14px;">Today, 2:00 PM - 2:30 PM</div>
+                                <div style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">AI/ML Platform for enterprise automation</div>
+                            </div>
+                            <a href="#" class="btn btn-primary" onclick="navigateTo('pitch-interface')">Join Session</a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Pitch Presentation Interface -->
+    <div id="pitch-interface" class="page-content">
+        <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 style="color: var(--primary);">Live Pitch Session</h1>
+                    <p>TechFlow AI - Sarah Chen presenting</p>
+                </div>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <div style="background-color: var(--danger); color: white; padding: 8px 16px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 10px; height: 10px; background-color: white; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                        <span>Recording</span>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 600;">⏱️ 12:45</div>
+                </div>
+            </div>
+
+            <div class="pitch-interface">
+                <div class="video-area">
+                    <div class="video-grid">
+                        <div class="video-feed">
+                            👤
+                            <div style="position: absolute; bottom: 16px; left: 16px; color: white; background-color: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 4px; font-size: 14px;">Sarah Chen (Presenter)</div>
+                        </div>
+                        <div class="video-feed">
+                            👤
+                            <div style="position: absolute; bottom: 16px; left: 16px; color: white; background-color: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 4px; font-size: 14px;">Michael Roberts</div>
+                        </div>
+                        <div class="video-feed">
+                            👤
+                            <div style="position: absolute; bottom: 16px; left: 16px; color: white; background-color: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 4px; font-size: 14px;">Jennifer Martinez</div>
+                        </div>
+                        <div class="video-feed">
+                            👤
+                            <div style="position: absolute; bottom: 16px; left: 16px; color: white; background-color: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 4px; font-size: 14px;">David Kim</div>
+                        </div>
+                    </div>
+                    <div class="video-controls">
+                        <div class="control-btn" title="Mute">🎤</div>
+                        <div class="control-btn" title="Camera">📹</div>
+                        <div class="control-btn" title="Share Screen">🖥️</div>
+                        <div class="control-btn danger" title="End Session">📞</div>
+                    </div>
+                </div>
+
+                <div class="side-panel">
+                    <div class="panel-section" style="flex: 1;">
+                        <div class="panel-title">Pitch Deck Viewer</div>
+                        <div style="background-color: var(--gray-200); height: 200px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--gray-600);">
+                            📊 Slide 5/12: Market Opportunity
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                            <button class="btn btn-secondary" style="flex: 1; margin-right: 8px;">← Previous</button>
+                            <button class="btn btn-secondary" style="flex: 1;">Next →</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-section" style="flex: 1;">
+                        <div class="panel-title">Investor Reactions</div>
+                        <div class="reaction-buttons">
+                            <button class="reaction-btn interested">👍 Interested</button>
+                            <button class="reaction-btn more-info">💡 More Info</button>
+                            <button class="reaction-btn pass">👎 Pass</button>
+                        </div>
+                        <div style="margin-top: 16px; padding: 12px; background-color: var(--gray-100); border-radius: var(--radius); font-size: 14px;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">Private Notes (Only you can see)</div>
+                            <textarea style="width: 100%; padding: 8px; border: 1px solid var(--gray-300); border-radius: var(--radius); resize: vertical; min-height: 80px;" placeholder="Take notes during the pitch..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="panel-section" style="flex: 1;">
+                        <div class="panel-title">Q&amp;A Chat</div>
+                        <div style="max-height: 150px; overflow-y: auto; margin-bottom: 12px;">
+                            <div style="padding: 8px; margin-bottom: 8px; background-color: var(--gray-100); border-radius: var(--radius); font-size: 14px;">
+                                <strong>Michael Roberts:</strong> What's your customer acquisition cost?
+                            </div>
+                            <div style="padding: 8px; margin-bottom: 8px; background-color: rgba(0, 168, 204, 0.1); border-radius: var(--radius); font-size: 14px;">
+                                <strong>Sarah Chen:</strong> Currently $150 per customer with 6-month payback
+                            </div>
+                            <div style="padding: 8px; margin-bottom: 8px; background-color: var(--gray-100); border-radius: var(--radius); font-size: 14px;">
+                                <strong>Jennifer Martinez:</strong> What's your retention rate?
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" placeholder="Ask a question..." style="flex: 1; padding: 8px; border: 1px solid var(--gray-300); border-radius: var(--radius);">
+                            <button class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Negotiation Workspace -->
+    <div id="deal-negotiation" class="page-content">
+        <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 style="color: var(--primary);">Deal Negotiation</h1>
+                    <p>TechFlow AI &amp; Michael Roberts</p>
+                </div>
+                <span class="status-badge status-negotiation">In Negotiation</span>
+            </div>
+
+            <div class="deal-workspace">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Conversation</h3>
+                    </div>
+                    <div class="conversation-thread">
+                        <div class="message">
+                            <div class="message-header">Michael Roberts • 2 days ago</div>
+                            <p>I'm interested in moving forward. Based on the pitch, I'd like to propose initial terms. I think a $500K investment at a $4M pre-money valuation would be fair.</p>
+                        </div>
+
+                        <div class="message sent">
+                            <div class="message-header">Sarah Chen • 2 days ago</div>
+                            <p>Thank you for the interest! We appreciate the offer. Given our traction and market potential, we were thinking more along the lines of a $5M pre-money valuation. Would you be open to discussing this?</p>
+                        </div>
+
+                        <div class="message">
+                            <div class="message-header">Michael Roberts • 1 day ago</div>
+                            <p>I understand your perspective. Looking at your metrics, I could go up to $4.5M pre-money. I'd also like to propose a board observer seat and standard protective provisions.</p>
+                        </div>
+
+                        <div class="message sent">
+                            <div class="message-header">Sarah Chen • 1 day ago</div>
+                            <p>We can work with $4.5M pre-money. The board observer seat is acceptable. Let's review the protective provisions in detail.</p>
+                        </div>
+
+                        <div class="message">
+                            <div class="message-header">Michael Roberts • 5 hours ago</div>
+                            <p>Perfect! I've updated the term sheet with our agreed terms. Please review and let me know if everything looks good.</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px; display: flex; gap: 8px;">
+                        <input type="text" placeholder="Type your message..." style="flex: 1; padding: 12px; border: 1px solid var(--gray-300); border-radius: var(--radius);">
+                        <button class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Term Sheet</h3>
+                        <div style="font-size: 12px; color: var(--gray-600);">Version 3 • Last updated 5 hours ago</div>
+                    </div>
+                    <div class="term-sheet">
+                        <div class="term-field">
+                            <label>Investment Amount</label>
+                            <input type="text" value="$500,000" readonly>
+                        </div>
+
+                        <div class="term-field">
+                            <label>Pre-Money Valuation</label>
+                            <input type="text" value="$4,500,000">
+                            <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">💬 Negotiated from $4M to $4.5M</div>
+                        </div>
+
+                        <div class="term-field">
+                            <label>Equity Percentage</label>
+                            <input type="text" value="10%" readonly>
+                            <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Calculated: $500K / ($4.5M + $500K)</div>
+                        </div>
+
+                        <div class="term-field">
+                            <label>Investment Type</label>
+                            <input type="text" value="Series Seed Preferred Stock" readonly>
+                        </div>
+
+                        <div class="term-field">
+                            <label>Board Seat</label>
+                            <input type="text" value="Observer Seat" readonly>
+                        </div>
+
+                        <div class="term-field">
+                            <label>Liquidation Preference</label>
+                            <input type="text" value="1x Non-Participating" readonly>
+                        </div>
+
+                        <div class="term-field">
+                            <label>Anti-Dilution Protection</label>
+                            <input type="text" value="Broad-Based Weighted Average" readonly>
+                        </div>
+
+                        <div style="margin-top: 24px; display: flex; gap: 12px;">
+                            <button class="btn btn-secondary" style="flex: 1;">Propose Changes</button>
+                            <button class="btn btn-primary" style="flex: 1;" onclick="navigateTo('documents')">Accept Terms</button>
+                        </div>
+
+                        <div style="margin-top: 16px; padding: 12px; background-color: rgba(0, 168, 204, 0.1); border-radius: var(--radius); font-size: 14px; color: var(--accent);">
+                            ℹ️ Once accepted, this will move to legal review and document preparation
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title">Negotiation Timeline</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; gap: 16px; align-items: start;">
+                        <div style="width: 40px; height: 40px; background-color: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">✓</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">Initial Offer Submitted</div>
+                            <div style="color: var(--gray-600); font-size: 14px;">$500K at $4M pre-money • 2 days ago</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 16px; align-items: start;">
+                        <div style="width: 40px; height: 40px; background-color: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">✓</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">Counter Offer</div>
+                            <div style="color: var(--gray-600); font-size: 14px;">Requested $5M pre-money • 2 days ago</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 16px; align-items: start;">
+                        <div style="width: 40px; height: 40px; background-color: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">✓</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">Revised Offer</div>
+                            <div style="color: var(--gray-600); font-size: 14px;">$500K at $4.5M pre-money • 1 day ago</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 16px; align-items: start;">
+                        <div style="width: 40px; height: 40px; background-color: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">→</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">Awaiting Acceptance</div>
+                            <div style="color: var(--gray-600); font-size: 14px;">Term sheet ready for review • Current</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Management -->
+    <div id="documents" class="page-content">
+        <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 style="color: var(--primary);">Document Management</h1>
+                    <p>Secure storage with granular access controls</p>
+                </div>
+                <button class="btn btn-primary" onclick="showUploadModal()">📤 Upload Document</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+                <div>
+                    <div class="upload-area" onclick="showUploadModal()">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📁</div>
+                        <div style="font-weight: 600; margin-bottom: 8px;">Drag &amp; Drop files here</div>
+                        <div style="color: var(--gray-600); font-size: 14px;">or click to browse</div>
+                        <div style="margin-top: 16px; padding: 12px 24px; background-color: var(--accent); color: white; border-radius: var(--radius); display: inline-block; cursor: pointer;">Select Files</div>
+                    </div>
+
+                    <div class="file-browser" style="margin-top: 24px;">
+                        <div class="folder">
+                            <div class="folder-header">
+                                <span style="font-size: 24px;">📂</span>
+                                <span>Pitch Decks</span>
+                                <span style="margin-left: auto; color: var(--gray-600); font-size: 14px;">3 files</span>
+                            </div>
+                            <div class="document-list">
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <div class="document-name">TechFlow_AI_Pitch_Deck_v3.pdf</div>
+                                        <div class="document-meta">Uploaded: Nov 15, 2025 • 2.4 MB • 🔒 Encrypted</div>
+                                    </div>
+                                    <span class="status-badge status-ready">✓ Signed</span>
+                                </div>
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <div class="document-name">Executive_Summary.pdf</div>
+                                        <div class="document-meta">Uploaded: Nov 14, 2025 • 892 KB • 🔒 Encrypted</div>
+                                    </div>
+                                    <span class="status-badge status-ready">✓ Active</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="folder">
+                            <div class="folder-header">
+                                <span style="font-size: 24px;">📂</span>
+                                <span>Financial Statements</span>
+                                <span style="margin-left: auto; color: var(--gray-600); font-size: 14px;">5 files</span>
+                            </div>
+                            <div class="document-list">
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <div class="document-name">Q3_2025_Financial_Report.xlsx</div>
+                                        <div class="document-meta">Uploaded: Nov 10, 2025 • 1.2 MB • 🔒 Encrypted</div>
+                                    </div>
+                                    <span class="status-badge status-ready">✓ Active</span>
+                                </div>
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <div class="document-name">Revenue_Projections_2026.xlsx</div>
+                                        <div class="document-meta">Uploaded: Nov 8, 2025 • 856 KB • 🔒 Encrypted</div>
+                                    </div>
+                                    <span class="status-badge status-ready">✓ Active</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="folder">
+                            <div class="folder-header">
+                                <span style="font-size: 24px;">📂</span>
+                                <span>Legal Documents</span>
+                                <span style="margin-left: auto; color: var(--gray-600); font-size: 14px;">4 files</span>
+                            </div>
+                            <div class="document-list">
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <div class="document-name">Term_Sheet_Michael_Roberts.pdf</div>
+                                        <div class="document-meta">Uploaded: Nov 16, 2025 • 324 KB • 🔒 Encrypted</div>
+                                    </div>
+                                    <span class="status-badge status-negotiation">⏳ Pending</span>
+                                </div>
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <div class="document-name">NDA_Template.pdf</div>
+                                        <div class="document-meta">Uploaded: Nov 5, 2025 • 178 KB • 🔒 Encrypted</div>
+                                    </div>
+                                    <span class="status-badge status-ready">✓ Signed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="folder">
+                            <div class="folder-header">
+                                <span style="font-size: 24px;">📂</span>
+                                <span>Due Diligence</span>
+                                <span style="margin-left: auto; color: var(--gray-600); font-size: 14px;">8 files</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Permission Controls</h3>
+                        </div>
+                        <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 16px;">Set document access for: <strong>Term_Sheet_Michael_Roberts.pdf</strong></div>
+                        
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Michael Roberts</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Full Access</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Team Members</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">View Only</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Legal Advisors</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Edit &amp; Comment</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">External Auditors</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">No Access</div>
+                            </div>
+                            <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 16px;">Save Permissions</button>
+                    </div>
+
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-header">
+                            <h3 class="card-title">E-Signature Status</h3>
+                        </div>
+                        <div style="padding: 16px; background-color: var(--gray-100); border-radius: var(--radius); margin-bottom: 12px;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">Term Sheet - Ready to Sign</div>
+                            <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 12px;">2 signatures required</div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                <span style="margin-right: 8px;">✓</span>
+                                <span style="font-size: 14px;">Sarah Chen (Signed)</span>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">⏳</span>
+                                <span style="font-size: 14px;">Michael Roberts (Pending)</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" style="width: 100%;">View Signature Workflow</button>
+                    </div>
+
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-header">
+                            <h3 class="card-title">Audit Trail</h3>
+                        </div>
+                        <div class="audit-log">
+                            <div class="audit-entry">
+                                <div style="font-weight: 600; font-size: 14px;">Document Viewed</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Michael Roberts viewed Term_Sheet_Michael_Roberts.pdf</div>
+                                <div class="audit-time">Nov 17, 2025 at 9:23 AM</div>
+                            </div>
+                            <div class="audit-entry">
+                                <div style="font-weight: 600; font-size: 14px;">Permission Updated</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Sarah Chen granted edit access to Legal Advisors</div>
+                                <div class="audit-time">Nov 16, 2025 at 4:15 PM</div>
+                            </div>
+                            <div class="audit-entry">
+                                <div style="font-weight: 600; font-size: 14px;">Document Uploaded</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Sarah Chen uploaded Term_Sheet_Michael_Roberts.pdf</div>
+                                <div class="audit-time">Nov 16, 2025 at 2:30 PM</div>
+                            </div>
+                            <div class="audit-entry">
+                                <div style="font-weight: 600; font-size: 14px;">Document Signed</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Sarah Chen signed NDA_Template.pdf</div>
+                                <div class="audit-time">Nov 5, 2025 at 11:45 AM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 16px; padding: 16px; background-color: rgba(72, 187, 120, 0.1); border-radius: var(--radius); border: 1px solid var(--success);">
+                        <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--success); margin-bottom: 8px;">
+                            <span>🔒</span>
+                            <span>Security Active</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--gray-600);">
+                            • 256-bit AES encryption<br>
+                            • SOC 2 Type II certified<br>
+                            • Complete audit trails
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy & Security Controls -->
+    <div id="security" class="page-content">
+        <div style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h1 style="color: var(--primary); margin-bottom: 16px;">Privacy &amp; Security Controls</h1>
+                <p style="font-size: 18px; color: var(--gray-600);">Enterprise-grade protection for your sensitive data</p>
+            </div>
+
+            <div class="security-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Encryption</h3>
+                    </div>
+                    <div style="text-align: center; padding: 24px;">
+                        <div style="font-size: 64px; margin-bottom: 16px;">🔐</div>
+                        <div style="font-weight: 600; margin-bottom: 8px;">256-bit AES Encryption</div>
+                        <p style="color: var(--gray-600); font-size: 14px;">All data is encrypted at rest and in transit using industry-standard protocols</p>
+                    </div>
+                    <div style="background-color: var(--gray-100); padding: 16px; border-radius: var(--radius);">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">How it works:</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                            <div>📤 Your data → 🔒 Encrypted → ☁️ Stored securely</div>
+                            <div>☁️ Retrieved → 🔓 Decrypted → 📥 Delivered to you</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Two-Factor Authentication</h3>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">Status: <span style="color: var(--success);">✓ Enabled</span></div>
+                            <p style="color: var(--gray-600); font-size: 14px;">Add an extra layer of security to your account</p>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">SMS Authentication</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">+1 (555) 123-4567</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Authenticator App</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Google Authenticator</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Email Verification</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">sarah@techflow.ai</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Privacy Settings</h3>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div style="margin-bottom: 16px;">
+                            <p style="color: var(--gray-600); font-size: 14px;">Control who can see your information and activity</p>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Profile Visibility</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Show to verified investors</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Activity Tracking</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Analytics for improvement</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Email Notifications</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">Updates and alerts</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                        <div class="toggle-control">
+                            <div>
+                                <div style="font-weight: 600;">Data Sharing</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">With legal partners</div>
+                            </div>
+                            <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Session Management</h3>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div style="margin-bottom: 16px;">
+                            <p style="color: var(--gray-600); font-size: 14px;">Active sessions and device access</p>
+                        </div>
+                        <div style="padding: 12px; background-color: var(--gray-100); border-radius: var(--radius); margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div>
+                                    <div style="font-weight: 600;">💻 MacBook Pro</div>
+                                    <div style="font-size: 12px; color: var(--gray-600);">San Francisco, CA • Current session</div>
+                                </div>
+                                <span style="color: var(--success); font-size: 12px;">● Active</span>
+                            </div>
+                        </div>
+                        <div style="padding: 12px; background-color: var(--gray-100); border-radius: var(--radius); margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div>
+                                    <div style="font-weight: 600;">📱 iPhone 14 Pro</div>
+                                    <div style="font-size: 12px; color: var(--gray-600);">San Francisco, CA • 2 hours ago</div>
+                                </div>
+                                <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">Revoke</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" style="width: 100%;">Sign Out All Devices</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Compliance Certifications</h3>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background-color: var(--gray-100); border-radius: var(--radius);">
+                                <div style="font-size: 32px;">🔒</div>
+                                <div>
+                                    <div style="font-weight: 600;">SOC 2 Type II</div>
+                                    <div style="font-size: 12px; color: var(--gray-600);">Certified January 2025</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background-color: var(--gray-100); border-radius: var(--radius);">
+                                <div style="font-size: 32px;">🛡️</div>
+                                <div>
+                                    <div style="font-weight: 600;">GDPR Compliant</div>
+                                    <div style="font-size: 12px; color: var(--gray-600);">Full compliance verified</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background-color: var(--gray-100); border-radius: var(--radius);">
+                                <div style="font-size: 32px;">✓</div>
+                                <div>
+                                    <div style="font-weight: 600;">ISO 27001</div>
+                                    <div style="font-size: 12px; color: var(--gray-600);">Information security standard</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Management</h3>
+                    </div>
+                    <div style="padding: 16px;">
+                        <p style="color: var(--gray-600); font-size: 14px; margin-bottom: 16px;">Control your personal data and privacy</p>
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;">📥 Download My Data</button>
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;">📊 View Privacy Report</button>
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;">🔄 Request Data Correction</button>
+                        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: var(--danger);">🗑️ Delete Account</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Security Activity</h3>
+                </div>
+                <div class="audit-log">
+                    <div class="audit-entry">
+                        <div style="font-weight: 600; font-size: 14px;">Successful Login</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">MacBook Pro • San Francisco, CA</div>
+                        <div class="audit-time">Nov 17, 2025 at 8:00 AM</div>
+                    </div>
+                    <div class="audit-entry">
+                        <div style="font-weight: 600; font-size: 14px;">Password Changed</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">Security update completed</div>
+                        <div class="audit-time">Nov 15, 2025 at 3:45 PM</div>
+                    </div>
+                    <div class="audit-entry">
+                        <div style="font-weight: 600; font-size: 14px;">Two-Factor Setup</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">Authenticator app configured</div>
+                        <div class="audit-time">Nov 10, 2025 at 11:20 AM</div>
+                    </div>
+                    <div class="audit-entry">
+                        <div style="font-weight: 600; font-size: 14px;">Privacy Settings Updated</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">Profile visibility changed to verified investors only</div>
+                        <div class="audit-time">Nov 8, 2025 at 2:15 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 32px; padding: 24px; background-color: rgba(0, 168, 204, 0.1); border-radius: var(--radius); border: 1px solid var(--accent);">
+                <h3 style="color: var(--accent); margin-bottom: 16px;">Your Privacy Matters</h3>
+                <p style="color: var(--gray-600); margin-bottom: 16px;">We take your privacy seriously. All sensitive data is encrypted, access is controlled, and we maintain complete audit trails. You have full control over your information and can export or delete it at any time.</p>
+                <a href="#" style="color: var(--accent); font-weight: 600; text-decoration: underline;">Read our full Privacy Policy →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Flow Diagram -->
+    <div id="userflow" class="page-content">
+        <div style="padding: 24px;">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h1 style="color: var(--primary); margin-bottom: 16px;">User Journey Flow</h1>
+                <p style="font-size: 18px; color: var(--gray-600);">From signup to successful investment - Complete platform walkthrough</p>
+            </div>
+
+            <div class="flow-diagram">
+                <div class="flow-container">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <h3 style="color: var(--primary);">Platform Entry</h3>
+                    </div>
+                    
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('signup')" style="background-color: var(--accent);">🚀 Sign Up</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div style="text-align: center; margin: 24px 0;">
+                        <h3 style="color: var(--primary);">User Type Selection</h3>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step startup" onclick="showFlowDetails('startup-profile')" style="margin-right: 48px;">🚀 Startup Profile</div>
+                        <div class="flow-step investor" onclick="showFlowDetails('investor-profile')">💼 Investor Profile</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow" style="margin-right: 200px;">↓</div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step startup" onclick="showFlowDetails('upload-pitch')" style="margin-right: 48px;">📤 Upload Pitch Deck</div>
+                        <div class="flow-step investor" onclick="showFlowDetails('set-criteria')">🎯 Set Investment Criteria</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow" style="margin-right: 200px;">↓</div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step startup" onclick="showFlowDetails('get-matched')" style="margin-right: 48px;">🎯 Get Matched</div>
+                        <div class="flow-step investor" onclick="showFlowDetails('discover')">🔍 Discover Startups</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow" style="margin-right: 150px;">↓</div>
+                        <div class="flow-arrow" style="margin-left: -50px;">↓</div>
+                    </div>
+
+                    <div style="text-align: center; margin: 24px 0;">
+                        <h3 style="color: var(--primary);">Convergence Point</h3>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('pitch-session')" style="background-color: var(--accent);">🎤 Live Pitch Session</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('negotiation')" style="background-color: var(--accent);">🤝 Deal Negotiation</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('due-diligence')" style="background-color: var(--accent);">📋 Due Diligence</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('legal-docs')" style="background-color: var(--accent);">📄 Legal Documents</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('e-signature')" style="background-color: var(--accent);">✍️ E-Signature</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('complete')" style="background-color: var(--success);">✅ Deal Complete</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-arrow">↓</div>
+                    </div>
+
+                    <div class="flow-row">
+                        <div class="flow-step" onclick="showFlowDetails('portfolio')" style="background-color: var(--accent);">📊 Portfolio Management</div>
+                    </div>
+                </div>
+
+                <!-- Flow Details Panel -->
+                <div id="flow-details-signup" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Sign Up</h3>
+                    <p><strong>Description:</strong> Users create an account by providing basic information including name, email, and password. Email verification is required for security.</p>
+                    <p><strong>Security:</strong> Two-factor authentication setup is encouraged during registration.</p>
+                    <p><strong>Next Step:</strong> Choose user type (Startup or Investor)</p>
+                </div>
+
+                <div id="flow-details-startup-profile" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Startup Profile Creation</h3>
+                    <p><strong>Description:</strong> Startups fill out comprehensive profile including company name, industry, stage, team information, and business model.</p>
+                    <p><strong>Key Fields:</strong> Company description, funding needs, use of funds, current traction, team bios</p>
+                    <p><strong>Next Step:</strong> Upload pitch deck and supporting documents</p>
+                </div>
+
+                <div id="flow-details-investor-profile" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Investor Profile Creation</h3>
+                    <p><strong>Description:</strong> Investors set up profile with investment preferences, expertise areas, and ticket sizes.</p>
+                    <p><strong>Key Fields:</strong> Investment focus, preferred industries, stage preferences, geographic focus, investment range</p>
+                    <p><strong>Next Step:</strong> Set detailed investment criteria for matching</p>
+                </div>
+
+                <div id="flow-details-upload-pitch" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Upload Pitch Deck</h3>
+                    <p><strong>Description:</strong> Startups upload pitch deck, financial projections, and other supporting materials.</p>
+                    <p><strong>Security:</strong> All documents are encrypted with 256-bit AES encryption. Access controls can be set per document.</p>
+                    <p><strong>Next Step:</strong> System matches startup with relevant investors</p>
+                </div>
+
+                <div id="flow-details-set-criteria" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Set Investment Criteria</h3>
+                    <p><strong>Description:</strong> Investors define specific criteria for matching algorithm including industry filters, funding stage, and deal size.</p>
+                    <p><strong>AI Matching:</strong> Smart algorithm matches investors with relevant opportunities based on criteria</p>
+                    <p><strong>Next Step:</strong> Discover matched startup opportunities</p>
+                </div>
+
+                <div id="flow-details-get-matched" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Get Matched with Investors</h3>
+                    <p><strong>Description:</strong> AI-powered matching engine connects startups with investors based on compatibility scores.</p>
+                    <p><strong>Factors:</strong> Industry alignment, stage fit, funding needs, investor preferences, geographic location</p>
+                    <p><strong>Next Step:</strong> Schedule pitch sessions with interested investors</p>
+                </div>
+
+                <div id="flow-details-discover" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Discover Startups</h3>
+                    <p><strong>Description:</strong> Investors browse curated feed of startups matching their criteria. Can filter, search, and add to watchlist.</p>
+                    <p><strong>Actions:</strong> Request details, schedule pitch, add to watchlist, pass on opportunity</p>
+                    <p><strong>Next Step:</strong> Request pitch session with promising startups</p>
+                </div>
+
+                <div id="flow-details-pitch-session" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Live Pitch Session</h3>
+                    <p><strong>Description:</strong> Real-time video conferencing session where startups present to investors. Includes pitch deck viewer, Q&A chat, and private notes.</p>
+                    <p><strong>Features:</strong> HD video, screen sharing, pitch deck navigation, investor reaction buttons, recording capability</p>
+                    <p><strong>Security:</strong> End-to-end encrypted video sessions with access controls</p>
+                    <p><strong>Next Step:</strong> If interested, move to deal negotiation</p>
+                </div>
+
+                <div id="flow-details-negotiation" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Deal Negotiation</h3>
+                    <p><strong>Description:</strong> Collaborative workspace for negotiating deal terms. Includes conversation thread, term sheet editor, and version control.</p>
+                    <p><strong>Key Terms:</strong> Valuation, equity percentage, investment amount, board seats, protective provisions</p>
+                    <p><strong>Features:</strong> Real-time collaboration, comment threads, offer history timeline</p>
+                    <p><strong>Next Step:</strong> Once terms agreed, proceed to due diligence</p>
+                </div>
+
+                <div id="flow-details-due-diligence" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Due Diligence</h3>
+                    <p><strong>Description:</strong> Investors review detailed financial, legal, and operational documents. Secure document sharing with granular permissions.</p>
+                    <p><strong>Documents:</strong> Financial statements, cap table, contracts, IP documentation, compliance records</p>
+                    <p><strong>Security:</strong> Complete audit trail of document access, permission-based sharing</p>
+                    <p><strong>Next Step:</strong> Prepare legal documents for signing</p>
+                </div>
+
+                <div id="flow-details-legal-docs" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Legal Documents</h3>
+                    <p><strong>Description:</strong> Platform generates or allows upload of legal investment documents including term sheets, SAFEs, or equity agreements.</p>
+                    <p><strong>Templates:</strong> Pre-approved templates or custom document upload</p>
+                    <p><strong>Review:</strong> Both parties and legal counsel can review and comment</p>
+                    <p><strong>Next Step:</strong> E-signature workflow</p>
+                </div>
+
+                <div id="flow-details-e-signature" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">E-Signature</h3>
+                    <p><strong>Description:</strong> Legally binding electronic signatures on investment documents. Compliant with ESIGN Act and eIDAS regulations.</p>
+                    <p><strong>Process:</strong> Document routing, signature placement, identity verification, email notifications</p>
+                    <p><strong>Security:</strong> Tamper-proof signatures, complete audit trail, certificate of completion</p>
+                    <p><strong>Next Step:</strong> Deal is complete, moves to portfolio</p>
+                </div>
+
+                <div id="flow-details-complete" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Deal Complete</h3>
+                    <p><strong>Description:</strong> Investment is finalized. All parties receive confirmation and executed documents.</p>
+                    <p><strong>Notifications:</strong> Email confirmations, document repository updates, portfolio additions</p>
+                    <p><strong>Next Step:</strong> Ongoing portfolio management and reporting</p>
+                </div>
+
+                <div id="flow-details-portfolio" class="flow-details">
+                    <h3 style="color: var(--primary); margin-bottom: 16px;">Portfolio Management</h3>
+                    <p><strong>Description:</strong> Post-investment tracking and reporting. Investors monitor company progress, startups provide updates.</p>
+                    <p><strong>Features:</strong> Performance metrics, financial reporting, milestone tracking, communication tools</p>
+                    <p><strong>Access:</strong> Both investors and startups have dashboards for portfolio oversight</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 48px; text-align: center;">
+                <p style="color: var(--gray-600); font-size: 14px;">Click on any step to see detailed information</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function navigateTo(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // Toggle Switch
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+
+        // Upload Modal (simulated)
+        function showUploadModal() {
+            alert('Upload functionality: In production, this would open a file picker dialog for secure document upload.');
+        }
+
+        // Flow Details
+        function showFlowDetails(stepId) {
+            // Hide all flow details
+            const allDetails = document.querySelectorAll('.flow-details');
+            allDetails.forEach(detail => detail.classList.remove('active'));
+            
+            // Show selected detail
+            const targetDetail = document.getElementById('flow-details-' + stepId);
+            if (targetDetail) {
+                targetDetail.classList.add('active');
+                targetDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // Pulse animation for recording indicator
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
