@@ -19,11 +19,16 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Light Theme (Default) */
+        /* Light Theme (Default) - Inverted: White BG, Blue Glow */
         body {
-            background: linear-gradient(-45deg, #bfdbfe, #fecaca, #bfdbfe, #fecaca);
-            background-size: 400% 400%;
-            animation: gradient-animation 20s ease infinite;
+            background-color: #ffffff;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #D2E9FE 0%, transparent 60%), 
+                radial-gradient(ellipse at 50% 100%, #D2E9FE 0%, transparent 70%);
+            background-attachment: fixed;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            animation: none;
             color: #0f172a; /* slate-900 */
             transition: color 0.3s ease;
         }
@@ -32,41 +37,46 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #e2e8f0; /* slate-200 */
+            background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background-color: #94a3b8; /* slate-400 */
+            background-color: #cbd5e1; /* slate-300 */
             border-radius: 10px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #ffffff;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background-color: #64748b; /* slate-500 */
+            background-color: #94a3b8; /* slate-400 */
         }
         option {
             color: #1f2937;
             background-color: #ffffff;
         }
 
-        /* Dark Theme Styles */
+        /* Dark Theme Styles - Minimalist Navy */
         .dark body {
-            background: linear-gradient(-45deg, #2c234b, #4f3275, #161425, #4c52a0);
-            background-size: 400% 400%;
-            animation: gradient-animation 20s ease infinite;
+            background-color: #020617; /* Deep Navy Base */
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(29, 78, 216, 0.15) 0%, transparent 50%), 
+                radial-gradient(ellipse at 50% 100%, rgba(29, 78, 216, 0.3) 0%, transparent 70%);
+            background-attachment: fixed;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            animation: none;
             color: #f8fafc;
         }
         .dark ::-webkit-scrollbar-track {
-            background: #161425;
+            background: #020617;
         }
         .dark ::-webkit-scrollbar-thumb {
-            background-color: #4f3275;
-            border: 2px solid #161425;
+            background-color: #1e3a8a;
+            border: 2px solid #020617;
         }
         .dark ::-webkit-scrollbar-thumb:hover {
-            background-color: #7e57c2;
+            background-color: #3b82f6;
         }
         .dark option {
             color: #f8fafc;
-            background-color: #2c234b;
+            background-color: #0f172a;
         }
 
         /* Animations */
@@ -128,20 +138,25 @@
 
               // New colors from reference site
               'secondary': '#FF2D2D',
-              'dark-bg': '#161425',
-              'dark-card': '#2c234b',
+              'dark-bg': '#020617', // Slate 950
+              'dark-card': '#1e293b', // Slate 800
               'light-gray': '#C4C4C4',
             },
             backgroundImage: {
-              'card-gradient': 'linear-gradient(145deg, #4f3275 0%, #2c234b 100%)',
-              'input-gradient': 'linear-gradient(145deg, #4f3275 0%, #2c234b 100%)',
+              // Updated gradients to be more subtle and navy-focused
+              'card-gradient': 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)', 
+              'input-gradient': 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+              // Light theme subtle gradients
+              'light-card-gradient': 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+              'light-input-gradient': 'linear-gradient(145deg, #f1f5f9 0%, #ffffff 100%)',
             },
             backdropBlur: {
                 'xl': '20px',
             },
             boxShadow: {
               'glow-red': '0 0 20px 0 rgba(239, 68, 68, 0.4)',
-              'card': '0 10px 25px -5px rgba(22, 20, 37, 0.4), 0 8px 10px -6px rgba(22, 20, 37, 0.4)',
+              'glow-blue': '0 0 20px 0 rgba(59, 130, 246, 0.3)',
+              'card': '0 10px 25px -5px rgba(2, 6, 23, 0.6), 0 8px 10px -6px rgba(2, 6, 23, 0.6)', // Darker shadow for navy theme
             }
           }
         }

@@ -5,10 +5,18 @@ import { LANGUAGES, CONTENT_TYPES, TONES } from "../constants.js";
 
 // --- API Key and Client Management ---
 
-const geminiApiKey = window.process?.env?.API_KEY;
+const getApiKey = (envVarName) => {
+    const keysRaw = window.process?.env?.[envVarName];
+    if (!keysRaw) return undefined;
+    const keys = keysRaw.split(',').map(k => k.trim()).filter(k => k);
+    if (keys.length === 0) return undefined;
+    return keys[Math.floor(Math.random() * keys.length)];
+};
+
+const geminiApiKey = getApiKey('API_KEY');
 
 const otherApiKeys = {
-  openai: window.process?.env?.OPENAI_API_KEY,
+  openai: getApiKey('OPENAI_API_KEY'),
 };
 
 const isValidKey = (key) => !!key && !key.startsWith('YOUR_');

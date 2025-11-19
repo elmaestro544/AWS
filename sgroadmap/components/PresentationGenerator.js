@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { i18n, PRESENTATION_THEMES, PRESENTATION_TEXT_AMOUNTS, PRESENTATION_LANGUAGES } from '../constants.js';
 import { 
@@ -278,7 +279,8 @@ const PreviewPanel = React.forwardRef(({
     speakingSlideIndex,
     audioLoadingSlideIndex,
     selectedTheme,
-    presentationLanguage
+    presentationLanguage,
+    appTheme
 }, ref) => {
 
     const renderContent = () => {
@@ -309,7 +311,7 @@ const PreviewPanel = React.forwardRef(({
     return React.createElement('div', { 
         ref: ref, 
         id: 'presentation-preview', 
-        style: { backgroundColor: selectedTheme.colors.previewBg }, 
+        style: { backgroundColor: appTheme === 'light' ? '#ffffff' : selectedTheme.colors.previewBg }, 
         className: "h-full rounded-xl border border-slate-200 dark:border-slate-700 p-4 overflow-y-auto" 
     },
         renderContent()
@@ -815,6 +817,7 @@ const PresentationGenerator = ({ language, theme: appTheme }) => {
                     audioLoadingSlideIndex: audioLoadingSlideIndex,
                     selectedTheme: selectedTheme,
                     presentationLanguage: presentationLanguage,
+                    appTheme: appTheme // Pass appTheme to override preview background
                 })
             )
         )

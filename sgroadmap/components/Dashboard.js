@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AppView, i18n, SERVICES } from '../constants.js';
 import SciGeniusChat from './SciGeniusChat.js';
@@ -71,10 +72,14 @@ const Dashboard = ({ language, setView, currentUser, theme, activeService, needs
     }
   };
 
-  const getButtonClasses = (isActive) => {
+  const getButtonClasses = (isActive, isAvailable = true) => {
     const baseClasses = `w-full flex items-center gap-2 p-3 text-left rounded-xl transition-all duration-200 ease-in-out`;
     const languageClass = language === 'ar' ? 'flex-row-reverse' : '';
     const collapsedClass = !isSidebarExpanded ? 'lg:w-14 lg:h-14 lg:justify-center lg:rounded-xl' : 'lg:w-full';
+
+    if (isAvailable === false) {
+        return `${baseClasses} ${languageClass} ${collapsedClass} bg-slate-100/50 dark:bg-dark-bg/50 opacity-60 cursor-not-allowed border border-slate-200/80 dark:border-white/10`;
+    }
 
     const activeStateClasses = isActive
         ? 'bg-brand-red/10 shadow-inner text-brand-red font-semibold border border-brand-red/20'
@@ -95,22 +100,29 @@ const Dashboard = ({ language, setView, currentUser, theme, activeService, needs
         React.createElement('div', { className: 'space-y-2' },
             SERVICES.map((service, index) => {
                 const isActive = activeService === service.id;
+                const isAvailable = service.isAvailable !== false;
                 const buttonContent = React.createElement(React.Fragment, null,
                     React.createElement(SidebarIcon, { iconComponent: service.icon }),
                     React.createElement('span', { 
                         className: `flex-grow whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${language === 'ar' ? 'text-right' : 'text-left'} ${!isSidebarExpanded ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 max-w-full lg:ml-2'}` 
                     }, t[service.titleKey]),
-                    service.isPremium && React.createElement('span', { 
-                        className: `text-xs font-bold bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full transition-all duration-300 ease-in-out ${!isSidebarExpanded ? 'lg:hidden' : ''}` 
-                    }, t.premiumFeature)
+                    !isAvailable ? (
+                        React.createElement('span', { 
+                            className: `text-xs font-bold bg-slate-300 text-slate-600 dark:bg-slate-700 dark:text-slate-400 px-2 py-0.5 rounded-full transition-all duration-300 ease-in-out ${!isSidebarExpanded ? 'lg:hidden' : ''}` 
+                        }, t.serviceComingSoon)
+                    ) : service.isPremium && (
+                        React.createElement('span', { 
+                            className: `text-xs font-bold bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full transition-all duration-300 ease-in-out ${!isSidebarExpanded ? 'lg:hidden' : ''}` 
+                        }, t.premiumFeature)
+                    )
                 );
                 
                 // Special handling for the first item which now contains the toggle
                 if (index === 0) {
                     return React.createElement('div', { key: service.id, className: "relative group" },
                         React.createElement('button', {
-                            onClick: () => handleServiceClick(service.id),
-                            className: getButtonClasses(isActive)
+                            onClick: () => isAvailable && handleServiceClick(service.id),
+                            className: getButtonClasses(isActive, isAvailable)
                         }, buttonContent),
                         // Tooltip for collapsed state
                         !isSidebarExpanded && React.createElement('div', {
@@ -135,13 +147,13 @@ const Dashboard = ({ language, setView, currentUser, theme, activeService, needs
                 return React.createElement('div', { key: service.id, className: "relative group" },
                     React.createElement('button', {
                         key: service.id,
-                        onClick: () => handleServiceClick(service.id),
-                        className: getButtonClasses(isActive)
+                        onClick: () => isAvailable && handleServiceClick(service.id),
+                        className: getButtonClasses(isActive, isAvailable)
                     }, buttonContent),
                     // Tooltip for collapsed state
                     !isSidebarExpanded && React.createElement('div', {
                         className: `absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden lg:block`
-                    }, t[service.titleKey])
+                    }, t[service.titleKey], !isAvailable && ` (${t.serviceComingSoon})`)
                 )
             })
         )

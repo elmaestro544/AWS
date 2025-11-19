@@ -1,3 +1,4 @@
+
 import { 
     DataAnalysisIcon, 
     InfographicIcon, 
@@ -77,6 +78,7 @@ export const SERVICES = [
         titleKey: 'homeCardInfographicVideoTitle',
         icon: InfographicVideoIcon,
         isPremium: true,
+        isAvailable: false,
     },
     {
         id: AppView.Prompt,
@@ -107,6 +109,7 @@ export const SERVICES = [
         titleKey: 'homeCardDesignTitle',
         icon: InteriorDesignerIcon,
         isPremium: true,
+        isAvailable: false,
     },
     {
         id: AppView.Translator,
@@ -420,6 +423,7 @@ export const i18n = {
     clearHistory: "Clear History",
     noHistory: "No history yet.",
     premiumFeature: "Premium",
+    serviceComingSoon: "Coming Soon",
     // Auth
     loginRegister: "Login",
     login: "Login",
@@ -753,6 +757,7 @@ export const i18n = {
     clearHistory: "مسح السجل",
     noHistory: "لا يوجد سجل حتى الآن.",
     premiumFeature: "بريميوم",
+    serviceComingSoon: "قريباً",
     // Auth
     loginRegister: "تسجيل الدخول",
     login: "تسجيل الدخول",

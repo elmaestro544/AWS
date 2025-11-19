@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { i18n } from '../constants.js';
@@ -37,10 +38,11 @@ const VoiceVisualizer = ({ analyserNode, isVoiceSessionActive }) => {
       canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
       
       const barGradient = canvasCtx.createLinearGradient(0, 0, canvasWidth, 0);
-      barGradient.addColorStop(0, '#C44ED4');
-      barGradient.addColorStop(0.3, '#4E7AD4');
-      barGradient.addColorStop(0.7, '#D44E4E');
-      barGradient.addColorStop(1, '#A14E4E');
+      // Updated to Navy/Blue theme
+      barGradient.addColorStop(0, '#0f172a'); // Slate 900 (Dark Navy)
+      barGradient.addColorStop(0.4, '#1e3a8a'); // Blue 900
+      barGradient.addColorStop(0.7, '#3b82f6'); // Blue 500
+      barGradient.addColorStop(1, '#60a5fa'); // Blue 400
 
       canvasCtx.fillStyle = barGradient;
 
@@ -459,6 +461,9 @@ const SciGeniusChat = ({ language, currentUser }) => {
     )
   );
 
+  const userInitial = currentUser ? currentUser.fullName.charAt(0).toUpperCase() : 'U';
+  const avatarUrl = 'https://images.unsplash.com/photo-1535378917042-10a22c95931a?q=80&w=200&auto=format&fit=crop';
+
   return React.createElement('div', { className: "max-w-4xl mx-auto" },
     React.createElement('div', { className: "text-center mb-6" },
       React.createElement('h2', { className: "text-3xl font-extrabold text-slate-900 dark:text-brand-text" }, t.chatTitle),
@@ -468,56 +473,67 @@ const SciGeniusChat = ({ language, currentUser }) => {
         currentUser && React.createElement('button', {
             onClick: () => setIsHistoryOpen(true),
             'aria-label': t.history,
-            className: `absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} z-20 p-2 text-white/70 hover:text-white rounded-full transition-colors`
+            className: `absolute top-4 ${language === 'ar' ? 'left-4' : 'right-4'} z-20 p-2 text-slate-500 dark:text-white/70 hover:text-slate-900 dark:hover:text-white rounded-full transition-colors`
         }, React.createElement(HistoryIcon, null)),
 
         React.createElement('div', {
-            className: "flex flex-col bg-card-gradient rounded-2xl shadow-2xl dark:shadow-glow-blue border border-white/10 overflow-hidden"
+            className: "flex flex-col bg-white dark:bg-card-gradient rounded-2xl shadow-2xl dark:shadow-glow-blue border border-slate-200 dark:border-white/10 overflow-hidden"
         },
             React.createElement('div', { ref: chatContainerRef, className: "flex-grow p-4 space-y-4 overflow-y-auto h-[calc(100vh-450px)] min-h-[300px]" },
-                (messages.length === 1 && messages[0].sender === 'model' && messages[0].text === t.homeDescription) ?
-                React.createElement('div', { className: "flex flex-col items-center justify-center h-full text-center p-4 animate-slide-in-up" },
-                    React.createElement('img', { 
-                        src: 'https://images.pexels.com/photos/2156881/pexels-photo-2156881.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-                        alt: 'SciGenius Avatar', 
-                        className: 'w-48 h-48 md:w-56 md:h-56 rounded-full mx-auto mb-6 object-cover' 
-                    }),
-                    React.createElement('p', { className: "text-lg text-slate-300 dark:text-brand-text-light" }, t.homeDescription)
-                )
-                : messages.map((msg, index) => (
-                React.createElement('div', { key: index, className: `flex ${msg.sender === 'user' ? (language === 'ar' ? 'justify-start' : 'justify-end') : (language === 'ar' ? 'justify-end' : 'justify-start')}` },
-                    React.createElement('div', { className: `relative max-w-xl p-3 rounded-2xl shadow-md ${msg.sender === 'user' ? 'bg-brand-blue text-white' : 'bg-slate-200 dark:bg-dark-bg text-slate-800 dark:text-brand-text'}` },
-                    msg.sender === 'model' && msg.text && React.createElement('button', {
-                        onClick: () => handleListen(msg.text, index),
-                        className: `absolute top-2 ${language === 'ar' ? 'left-2' : 'right-2'} h-7 w-7 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full hover:bg-black/10 dark:hover:bg-white/20`
-                    }, isAudioLoading === index 
-                        ? React.createElement(Spinner, { size: "4" }) 
-                        : speakingMessageIndex === index 
-                            ? React.createElement(StopIcon, {className: "h-4 w-4"}) 
-                            : React.createElement(SpeakerIcon, {className: "h-4 w-4"})
-                    ),
-                    msg.file && React.createElement('div', {className: "text-xs italic opacity-80 mb-1 border-b border-slate-300 dark:border-white/20 pb-1"}, `Attached: ${msg.file}`),
-                    React.createElement('p', { className: `whitespace-pre-wrap ${msg.sender === 'model' ? (language === 'ar' ? 'pl-10' : 'pr-10') : ''}` }, msg.text),
-                    msg.sources && msg.sources.length > 0 && (
+                messages.map((msg, index) => {
+                    const isUser = msg.sender === 'user';
+        
+                    const avatarElement = React.createElement('div', { className: 'w-10 h-10 rounded-full flex-shrink-0' },
+                        isUser ?
+                        React.createElement('div', { className: 'w-full h-full rounded-full bg-brand-blue flex items-center justify-center' },
+                            React.createElement('span', { className: 'text-white font-bold text-lg' }, userInitial)
+                        ) :
+                        React.createElement('img', { src: avatarUrl, alt: 'SciGenius Avatar', className: 'w-full h-full rounded-full object-cover' })
+                    );
+        
+                    const bubbleElement = React.createElement('div', { className: `relative max-w-xl p-3 rounded-2xl shadow-md ${isUser ? 'bg-brand-blue text-white' : 'bg-slate-200 dark:bg-dark-bg text-slate-800 dark:text-brand-text'}` },
+                        !isUser && msg.text && React.createElement('button', {
+                            onClick: () => handleListen(msg.text, index),
+                            className: `absolute top-2 ${language === 'ar' ? 'left-2' : 'right-2'} h-7 w-7 flex items-center justify-center bg-black/5 dark:bg-white/10 rounded-full hover:bg-black/10 dark:hover:bg-white/20`
+                        }, isAudioLoading === index
+                            ? React.createElement(Spinner, { size: "4" })
+                            : speakingMessageIndex === index
+                            ? React.createElement(StopIcon, { className: "h-4 w-4" })
+                            : React.createElement(SpeakerIcon, { className: "h-4 w-4" })
+                        ),
+                        msg.file && React.createElement('div', { className: "text-xs italic opacity-80 mb-1 border-b border-slate-300 dark:border-white/20 pb-1" }, `Attached: ${msg.file}`),
+                        React.createElement('p', { className: `whitespace-pre-wrap ${!isUser ? (language === 'ar' ? 'pl-10' : 'pr-10') : ''}` }, msg.text),
+                        msg.sources && msg.sources.length > 0 && (
                         React.createElement('div', { className: "mt-3 pt-2 border-t border-slate-300 dark:border-white/20" },
-                        React.createElement('h4', { className: "font-semibold text-sm mb-1" }, t.sources),
-                        React.createElement('div', { className: "flex flex-wrap gap-2" },
+                            React.createElement('h4', { className: "font-semibold text-sm mb-1" }, t.sources),
+                            React.createElement('div', { className: "flex flex-wrap gap-2" },
                             msg.sources.map((source, i) => (
-                            React.createElement('a', { key: i, href: source.web?.uri, target: "_blank", rel: "noopener noreferrer", className: "text-xs bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 py-1 px-2 rounded-full transition-colors truncate" },
+                                React.createElement('a', { key: i, href: source.web?.uri, target: "_blank", rel: "noopener noreferrer", className: "text-xs bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 py-1 px-2 rounded-full transition-colors truncate" },
                                 source.web?.title || new URL(source.web?.uri || '').hostname
-                            )
+                                )
                             ))
+                            )
                         )
                         )
-                    )
-                    )
-                )
-                )),
+                    );
+        
+                    return React.createElement('div', {
+                        key: index,
+                        className: `flex items-start gap-3 ${isUser ? 'justify-end' : 'justify-start'}`
+                    },
+                        isUser ? [bubbleElement, avatarElement] : [avatarElement, bubbleElement]
+                    );
+                }),
                 isLoading && (
                 React.createElement('div', { className: "flex justify-start" },
-                    React.createElement('div', { className: "bg-slate-200 dark:bg-card-gradient p-3 rounded-2xl flex items-center space-x-2" },
-                    React.createElement(Spinner, { size: "5" }),
-                    React.createElement('span', { className: "text-slate-500 dark:text-brand-text-light" }, t.thinking)
+                    React.createElement('div', { className: "flex items-start gap-3" },
+                        React.createElement('div', { className: 'w-10 h-10 rounded-full flex-shrink-0' },
+                            React.createElement('img', { src: avatarUrl, alt: 'SciGenius Avatar', className: 'w-full h-full rounded-full object-cover' })
+                        ),
+                        React.createElement('div', { className: "bg-slate-200 dark:bg-dark-bg p-3 rounded-2xl flex items-center space-x-2" },
+                            React.createElement(Spinner, { size: "5" }),
+                            React.createElement('span', { className: "text-slate-500 dark:text-brand-text-light" }, t.thinking)
+                        )
                     )
                 )
                 )

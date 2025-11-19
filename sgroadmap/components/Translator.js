@@ -37,8 +37,10 @@ const VoiceVisualizer = ({ analyserNode, isRecording }) => {
       canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
       
       const barGradient = canvasCtx.createLinearGradient(0, 0, 0, canvasHeight);
-      barGradient.addColorStop(0, '#ef4444');
-      barGradient.addColorStop(1, '#f87171');
+      // Updated to Navy/Blue theme
+      barGradient.addColorStop(0, '#0f172a'); // Slate 900
+      barGradient.addColorStop(0.4, '#1e3a8a'); // Blue 900
+      barGradient.addColorStop(1, '#3b82f6'); // Blue 500
 
       canvasCtx.fillStyle = barGradient;
 
