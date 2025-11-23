@@ -272,8 +272,14 @@ const ComprehensivePlanView = ({ language, projectData, onUpdateProject, isLoadi
         setError(null);
         try {
             const plan = await generateConsultingPlan(formData);
-            // Save to parent and DB
-            onUpdateProject({ consultingPlan: plan });
+            
+            // Save plan AND sync the project objective to unlock other workflow steps
+            onUpdateProject({ 
+                consultingPlan: plan,
+                objective: plan.scopeAndObjectives || formData.scope,
+                title: plan.projectTitle || formData.name
+            });
+            
         } catch (err) {
             setError(err.message || "Failed to generate plan.");
         } finally {
@@ -282,6 +288,7 @@ const ComprehensivePlanView = ({ language, projectData, onUpdateProject, isLoadi
     };
 
     const handleReset = () => {
+        // Resetting doesn't necessarily clear the objective if they want to try again, but we clear the plan view
         onUpdateProject({ consultingPlan: null });
         setError(null);
     };

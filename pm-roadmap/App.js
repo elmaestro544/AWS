@@ -47,7 +47,7 @@ const WelcomeModal = ({ isOpen, onClose, onAuthClick, language }) => {
 
 
 // Header Component
-const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, onLoginClick, onLogout, theme, toggleTheme, onMenuToggle }) => {
+const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, currentUser, onLoginClick, onLogout, theme, toggleTheme, onMenuToggle }) => {
   const t = i18n[language];
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -95,7 +95,21 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
       // Right: Controls
       React.createElement('div', { className: 'hidden md:flex items-center gap-4' },
         isAuthenticated ? (
-          React.createElement('button', { onClick: () => setView(AppView.Dashboard), className: "font-semibold bg-button-gradient text-white px-6 py-2 rounded-lg transition-opacity hover:opacity-90 shadow-md shadow-brand-purple/20" }, t.navDashboard)
+          React.createElement('div', { className: 'flex items-center gap-4' },
+             React.createElement('button', { 
+                 onClick: () => setView(AppView.Dashboard), 
+                 className: "font-semibold bg-button-gradient text-white px-5 py-2 rounded-lg transition-opacity hover:opacity-90 shadow-md shadow-brand-purple/20 text-sm" 
+             }, t.navDashboard),
+             React.createElement('div', { className: 'flex items-center gap-2 pl-4 border-l border-white/10' },
+                React.createElement('div', { className: 'w-8 h-8 rounded-full bg-brand-purple/20 flex items-center justify-center text-brand-purple-light border border-brand-purple/30' },
+                    React.createElement(UserIcon, { className: 'w-5 h-5' })
+                ),
+                React.createElement('div', { className: 'flex flex-col' },
+                    React.createElement('span', { className: 'text-sm font-semibold text-white leading-none' }, currentUser?.fullName?.split(' ')[0] || 'User'),
+                    React.createElement('button', { onClick: onLogout, className: 'text-xs text-brand-text-light hover:text-white text-left mt-0.5' }, t.logout)
+                )
+             )
+          )
         ) : (
           React.createElement('button', { onClick: onLoginClick, className: "font-semibold bg-button-gradient text-white px-6 py-2 rounded-lg transition-opacity hover:opacity-90 shadow-md shadow-brand-purple/20" }, t.loginRegister)
         ),
@@ -308,6 +322,7 @@ const App = () => {
       language: language,
       setLanguage: setLanguage,
       isAuthenticated: !!currentUser,
+      currentUser: currentUser,
       onLoginClick: () => setIsAuthModalOpen(true),
       onLogout: handleLogout,
       theme: theme,

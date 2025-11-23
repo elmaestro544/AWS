@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { i18n, DASHBOARD_VIEWS } from '../constants.js';
 import AssistantView from './SciGeniusChat.js';
@@ -19,27 +20,40 @@ import { getUserProjects, getProjectDetails, saveProject } from '../services/sup
 const WORKFLOW_ORDER = ['consultingPlan', 'planning', 'scheduling', 'budget', 'risk', 'kpis', 'scurve', 'structure', 'agents', 'assistant'];
 
 const PREREQUISITES = {
+    planning: 'objective', // Planning needs an objective (which comes from Consulting Plan or manual entry)
     scheduling: 'plan',
+    budget: 'objective',
+    risk: 'objective',
+    structure: 'objective',
     kpis: 'budget', // also needs schedule, but budget is a good gate
     scurve: 'schedule',
 };
 
-const PrerequisiteView = ({ missing, language }) => {
-    const t = i18n[language];
+const PrerequisiteView = ({ missing, language, onViewChange }) => {
     return React.createElement('div', { className: "flex flex-col items-center justify-center h-full text-center p-8" },
-        React.createElement('h3', { className: "text-2xl font-bold text-white" }, "Prerequisite Needed"),
-        React.createElement('p', { className: "text-brand-text-light mt-2 max-w-md" }, `Please complete the '${missing}' step before accessing this section.`)
+        React.createElement('div', { className: "bg-dark-card-solid border border-dark-border p-8 rounded-2xl max-w-md shadow-2xl" },
+            React.createElement('h3', { className: "text-2xl font-bold text-white mb-2" }, "Step Locked"),
+            React.createElement('p', { className: "text-brand-text-light mb-6" }, 
+                missing === 'objective' 
+                ? "Please complete the 'Project Plan' step first to define your project scope and objectives." 
+                : `Please complete the '${missing}' step before accessing this section.`
+            ),
+            missing === 'objective' && React.createElement('button', {
+                onClick: () => onViewChange('consultingPlan'),
+                className: "px-6 py-2 bg-button-gradient text-white rounded-lg font-semibold hover:opacity-90"
+            }, "Go to Project Plan")
+        )
     );
 };
 
 const ProjectHeader = ({ language, objective, onReset, onNext, onPrev, activeView }) => {
     const t = i18n[language];
     return React.createElement('div', { className: 'non-printable flex-shrink-0 h-16 flex items-center justify-between px-6 border-b border-dark-border bg-dark-card/50' },
-        React.createElement('div', { className: 'flex-grow min-w-0' },
-            React.createElement('h2', { className: 'text-sm font-semibold text-brand-text-light' }, 'Project Objective'),
-            React.createElement('p', { className: 'text-white truncate font-semibold', title: objective }, objective || "No project started")
+        React.createElement('div', { className: 'flex-grow min-w-0 mr-4' },
+            React.createElement('h2', { className: 'text-xs font-semibold text-brand-text-light uppercase tracking-wider' }, 'Current Project Scope'),
+            React.createElement('p', { className: 'text-white truncate font-semibold text-sm', title: objective }, objective || "Start by creating a Project Plan")
         ),
-        React.createElement('div', { className: 'flex items-center gap-2' },
+        React.createElement('div', { className: 'flex items-center gap-2 flex-shrink-0' },
             React.createElement('button', { onClick: onPrev, disabled: WORKFLOW_ORDER.indexOf(activeView) === 0, className: 'p-2 rounded-md text-brand-text-light hover:bg-white/10 hover:text-white disabled:opacity-50' }, '‹ Prev'),
             React.createElement('button', { onClick: onNext, disabled: WORKFLOW_ORDER.indexOf(activeView) === WORKFLOW_ORDER.length - 1, className: 'px-4 py-2 text-sm font-semibold bg-button-gradient text-white rounded-md transition-opacity hover:opacity-90 disabled:opacity-50' }, 'Next ›'),
             React.createElement('div', { className: 'w-px h-6 bg-dark-border mx-2' }),
@@ -55,7 +69,7 @@ const ProjectHistoryList = ({ onSelectProject, projects, language }) => {
         projects.map(p => React.createElement('button', {
             key: p.id,
             onClick: () => onSelectProject(p.id),
-            className: 'w-full text-left p-2 rounded-md hover:bg-white/5 mb-1 group'
+            className: 'w-full text-left p-2 rounded-md hover:bg-white/5 mb-1 group transition-colors'
         },
             React.createElement('p', { className: 'text-sm font-medium text-white truncate' }, p.title || "Untitled Project"),
             React.createElement('p', { className: 'text-xs text-slate-500' }, new Date(p.updated_at).toLocaleDateString())
@@ -75,47 +89,38 @@ const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded,
         if (isDisabled) {
             stateClasses = 'text-slate-600 cursor-not-allowed';
         } else if (isActive) {
-            stateClasses = 'bg-brand-purple/20 text-white font-semibold';
+            stateClasses = 'bg-brand-purple/20 text-white font-semibold border-l-4 border-brand-purple-light';
         } else {
-            stateClasses = 'text-brand-text-light hover:bg-white/10 hover:text-white';
+            stateClasses = 'text-brand-text-light hover:bg-white/10 hover:text-white border-l-4 border-transparent';
         }
         
-        const activeIndicator = isActive ? React.createElement('div', { className: `absolute top-0 h-full w-1 bg-brand-purple-light rounded-r-full ${language === 'ar' ? 'right-0 rounded-l-full rounded-r-none' : 'left-0'}` }) : null;
-
         return {
             className: `${baseClasses} ${paddingClass} ${languageClass} ${stateClasses}`,
-            indicator: activeIndicator
         };
     };
 
     return React.createElement('aside', {
-        className: `relative flex-shrink-0 bg-dark-card-solid flex flex-col transition-all duration-300 ease-in-out sidebar-glow ${isExpanded ? 'w-64' : 'w-20'}`
+        className: `relative flex-shrink-0 bg-dark-card-solid flex flex-col transition-all duration-300 ease-in-out sidebar-glow border-r border-dark-border ${isExpanded ? 'w-72' : 'w-20'}`
     },
-        React.createElement('div', {
-            className: `flex items-center h-16 px-4 border-b border-dark-border ${isExpanded ? 'justify-start' : 'justify-center'}`
-        },
-            isExpanded && React.createElement('h2', { className: 'text-xl font-bold bg-gradient-to-r from-cyan-400 via-lime-400 to-yellow-400 text-transparent bg-clip-text' }, 'Dashboard')
-        ),
-        React.createElement('div', { className: 'flex-grow p-4 space-y-2 overflow-y-auto' },
+        React.createElement('div', { className: 'flex-grow p-4 space-y-2 overflow-y-auto mt-4' },
             DASHBOARD_VIEWS.map(view => {
                 const Icon = view.icon;
                 const isActive = activeView === view.id;
                 const prerequisite = PREREQUISITES[view.id];
                 const isDisabled = !!prerequisite && !projectData[prerequisite];
-                const { className, indicator } = getButtonClasses(isActive, isDisabled);
+                const { className } = getButtonClasses(isActive, isDisabled);
 
                 return React.createElement('div', { key: view.id, className: "relative group" },
-                    indicator,
                     React.createElement('button', {
                         onClick: () => !isDisabled && setActiveView(view.id),
                         className: className,
                         disabled: isDisabled,
                     },
-                        React.createElement(Icon, { className: `h-6 w-6 flex-shrink-0` }),
-                        isExpanded && React.createElement('span', { className: 'truncate' }, t[view.titleKey])
+                        React.createElement(Icon, { className: `h-5 w-5 flex-shrink-0` }),
+                        isExpanded && React.createElement('span', { className: 'truncate text-sm' }, t[view.titleKey])
                     ),
                     !isExpanded && React.createElement('div', {
-                        className: `absolute top-1/2 -translate-y-1/2 left-full ml-4 px-2 py-1 bg-dark-card-solid text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 ${language === 'ar' ? 'right-full mr-4 left-auto' : ''}`
+                        className: `absolute top-1/2 -translate-y-1/2 left-full ml-4 px-2 py-1 bg-dark-card-solid text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-dark-border ${language === 'ar' ? 'right-full mr-4 left-auto' : ''}`
                     }, t[view.titleKey])
                 )
             })
@@ -127,17 +132,10 @@ const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded,
             React.createElement('button', {
                 onClick: () => setExpanded(!isExpanded),
                 'aria-label': isExpanded ? 'Collapse sidebar' : 'Expand sidebar',
-                className: `w-full flex items-center gap-4 text-left rounded-lg transition-all duration-200 ease-in-out relative text-brand-text-light hover:bg-white/10 hover:text-white mb-4 ${isExpanded ? 'px-4 py-3' : 'p-3 justify-center'} ${language === 'ar' ? 'flex-row-reverse' : ''}`
+                className: `w-full flex items-center gap-4 text-left rounded-lg transition-all duration-200 ease-in-out relative text-brand-text-light hover:bg-white/10 hover:text-white ${isExpanded ? 'px-4 py-2' : 'p-2 justify-center'} ${language === 'ar' ? 'flex-row-reverse' : ''}`
             },
                 React.createElement(SidebarToggleIcon, { isExpanded: isExpanded }),
-                isExpanded && React.createElement('span', { className: 'truncate' }, 'Collapse Sidebar')
-            ),
-            React.createElement('div', { className: `flex items-center gap-3 ${!isExpanded ? 'justify-center' : ''}` },
-                React.createElement('div', { className: `p-2 bg-dark-bg rounded-full` }, React.createElement(UserIcon, { className: 'h-5 w-5' })),
-                isExpanded && React.createElement('div', { className: 'flex-grow overflow-hidden' },
-                    React.createElement('p', { className: 'text-sm font-semibold truncate text-white' }, currentUser?.fullName || 'Guest'),
-                    React.createElement('button', { onClick: onLogout, className: 'text-xs text-brand-text-light hover:text-brand-purple-light' }, t.logout)
-                )
+                isExpanded && React.createElement('span', { className: 'truncate text-sm' }, 'Collapse Sidebar')
             )
         )
     );
@@ -250,11 +248,11 @@ const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) =
         setError
     };
     
-    // Check prerequisites for views other than the first one (planning/consulting) or independent views
-    if (activeView !== 'planning' && activeView !== 'assistant' && activeView !== 'consultingPlan') {
+    // Check prerequisites
+    if (activeView !== 'assistant' && activeView !== 'consultingPlan') {
         const prerequisite = PREREQUISITES[activeView];
         if (prerequisite && !projectData[prerequisite]) {
-            return React.createElement(PrerequisiteView, { missing: prerequisite, language });
+            return React.createElement(PrerequisiteView, { missing: prerequisite, language, onViewChange: setActiveView });
         }
     }
 
