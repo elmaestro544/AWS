@@ -1,21 +1,20 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { i18n, AppView } from '../constants.js';
-import { CloseIcon, GoogleIcon } from './Shared.js';
+import { CloseIcon, GoogleIcon, Spinner } from './Shared.js';
+import { signIn, signUp } from '../services/supabaseClient.js';
 
-// Define ModalContent as a standalone component to prevent re-renders from causing input focus loss.
 const ModalContent = ({
   t,
   isLoginView,
   formData,
   error,
   success,
+  loading,
   handleInputChange,
   handleSubmit,
   onClose,
   setIsLoginView,
-  onLoginSuccess,
   setView
 }) => (
     React.createElement('div', { className: "bg-dark-card backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-md relative glow-border" },
@@ -79,9 +78,10 @@ const ModalContent = ({
         ),
         React.createElement('button', {
           type: "submit",
-          className: "w-full bg-button-gradient text-white font-bold py-2.5 px-4 rounded-full transition-opacity hover:opacity-90 mt-2 shadow-md shadow-brand-purple/20"
+          disabled: loading,
+          className: "w-full bg-button-gradient text-white font-bold py-2.5 px-4 rounded-full transition-opacity hover:opacity-90 mt-2 shadow-md shadow-brand-purple/20 flex justify-center items-center"
         },
-          isLoginView ? t.login : t.createAccount
+          loading ? React.createElement(Spinner, { size: '5' }) : (isLoginView ? t.login : t.createAccount)
         )
       ),
       React.createElement('div', { className: "relative my-6" },
@@ -91,13 +91,6 @@ const ModalContent = ({
         React.createElement('div', { className: "relative flex justify-center text-sm" },
           React.createElement('span', { className: "px-2 bg-dark-card text-brand-text-light" }, "OR")
         )
-      ),
-      React.createElement('button', {
-        onClick: () => onLoginSuccess({ email: 'guest@pmroadmap.com', fullName: 'Guest User' }), // Simulate google login
-        className: "w-full flex items-center justify-center gap-3 bg-dark-card-solid hover:bg-opacity-80 text-white font-semibold py-2.5 px-4 rounded-full transition-colors border border-dark-border"
-      },
-        React.createElement(GoogleIcon, null),
-        t.signInWithGoogle
       ),
       React.createElement('p', { className: "mt-6 text-center text-sm text-brand-text-light" },
         isLoginView ? t.dontHaveAccount : t.alreadyHaveAccount,
@@ -116,6 +109,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess, language, setView }) => {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setError('');
@@ -128,79 +122,48 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess, language, setView }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setLoading(true);
 
-    const ADMIN_PASSWORD = "5431";
-
-    if (isLoginView && formData.password === ADMIN_PASSWORD) {
-        onLoginSuccess({
-            email: formData.email,
-            fullName: 'Admin',
-            isAdmin: true,
-        });
-        return;
-    }
-
-    const getStoredUsers = () => {
-        try {
-            const users = localStorage.getItem('pmroadmap_users');
-            return users ? JSON.parse(users) : [];
-        } catch (err) {
-            return [];
-        }
-    };
-    
-    const setStoredUsers = (users) => {
-        localStorage.setItem('pmroadmap_users', JSON.stringify(users));
-    };
-
-    if (isLoginView) {
-        const users = getStoredUsers();
-        const foundUser = users.find(user => user.email === formData.email && user.password === formData.password);
-        if (foundUser) {
-            onLoginSuccess({ email: foundUser.email, fullName: foundUser.fullName });
+    try {
+        if (isLoginView) {
+            // LOGIN
+            const { data, error } = await signIn(formData.email, formData.password);
+            if (error) throw error;
+            if (data?.user) {
+                // onLoginSuccess handled by App.js auth listener mostly, but we can trigger close
+                onClose();
+            }
         } else {
-            setError(t.errorInvalidCredentials);
+            // REGISTER
+            if (formData.password !== formData.confirmPassword) {
+                throw new Error(t.errorPasswordMismatch);
+            }
+            if (formData.password.length < 6) {
+                 throw new Error(t.errorPasswordLength);
+            }
+            const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
+            if (error) throw error;
+            setSuccess("Registration successful! Please check your email to verify your account, or log in.");
+            setTimeout(() => setIsLoginView(true), 2000);
         }
-    } else {
-        const { fullName, email, password, confirmPassword } = formData;
-        if (!fullName.trim()) { setError(t.errorFullNameRequired); return; }
-        if (!validateEmail(email)) { setError(t.errorInvalidEmail); return; }
-        if (password.length < 8) { setError(t.errorPasswordLength); return; }
-        if (password !== confirmPassword) { setError(t.errorPasswordMismatch); return; }
-
-        const users = getStoredUsers();
-        if (users.some(user => user.email === email)) {
-            setError(t.errorUserExists);
-            return;
-        }
-
-        const newUser = { fullName, email, password };
-        setStoredUsers([...users, newUser]);
-        
-        setSuccess(t.registrationSuccess);
-        setTimeout(() => {
-            setIsLoginView(true);
-        }, 2000);
+    } catch (err) {
+        setError(err.message || t.errorOccurred);
+    } finally {
+        setLoading(false);
     }
   };
 
   if (!isOpen) return null;
   
-  const modalContainerProps = {
-    className: "fixed inset-0 bg-black/80 z-[100] flex justify-center items-center backdrop-blur-sm transition-opacity",
-    onClick: onClose,
-    role: "dialog",
-    "aria-modal": "true"
-  };
-
   return (
-    React.createElement('div', modalContainerProps,
+    React.createElement('div', {
+        className: "fixed inset-0 bg-black/80 z-[100] flex justify-center items-center backdrop-blur-sm transition-opacity",
+        onClick: onClose,
+    },
       React.createElement('div', { onClick: (e) => e.stopPropagation(), className: "transform transition-all" },
         React.createElement(ModalContent, {
           t,
@@ -208,11 +171,11 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess, language, setView }) => {
           formData,
           error,
           success,
+          loading,
           handleInputChange,
           handleSubmit,
           onClose,
           setIsLoginView,
-          onLoginSuccess,
           setView
         })
       )

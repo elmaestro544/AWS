@@ -1,4 +1,6 @@
-import { PlanningIcon, RiskIcon, AgentIcon, ScheduleIcon, BudgetIcon, AssistantIcon, StructureIcon, KpiIcon, SCurveIcon } from './components/Shared.js';
+
+
+import { PlanningIcon, RiskIcon, AgentIcon, ScheduleIcon, BudgetIcon, AssistantIcon, StructureIcon, KpiIcon, SCurveIcon, DocumentIcon } from './components/Shared.js';
 
 export const AppView = Object.freeze({
   Home: 'home',
@@ -17,6 +19,7 @@ export const Language = Object.freeze({
 
 export const DASHBOARD_VIEWS = [
     { id: 'assistant', titleKey: 'dashboardAssistant', icon: AssistantIcon },
+    { id: 'consultingPlan', titleKey: 'dashboardConsultingPlan', icon: DocumentIcon },
     { id: 'planning', titleKey: 'dashboardPlanning', icon: PlanningIcon },
     { id: 'scheduling', titleKey: 'dashboardScheduling', icon: ScheduleIcon },
     { id: 'kpis', titleKey: 'dashboardKpis', icon: KpiIcon },
@@ -124,6 +127,7 @@ export const i18n = {
     thinking: "AI Assistant is thinking...",
     sources: "Sources",
     dashboardAssistant: "AI Assistant",
+    dashboardConsultingPlan: "Project Plan",
     dashboardPlanning: "Planning",
     dashboardScheduling: "Scheduling",
     dashboardStructure: "Structure",
@@ -267,6 +271,7 @@ export const i18n = {
     thinking: "المساعد الذكي يفكر...",
     sources: "المصادر",
     dashboardAssistant: "مساعد الذكاء الاصطناعي",
+    dashboardConsultingPlan: "خطة المشروع",
     dashboardPlanning: "التخطيط",
     dashboardScheduling: "الجدولة",
     dashboardStructure: "الهيكل",

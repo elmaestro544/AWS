@@ -1,5 +1,4 @@
 
-
 // components/AgentView.js
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -33,7 +32,7 @@ const PartnerCard = ({ name, service, status, contact, rating }) => (
     )
 );
 
-const RequestOfferModal = ({ isOpen, onClose, language }) => {
+const RequestOfferModal = ({ isOpen, onClose, language, onSaveOffers }) => {
     const [step, setStep] = useState('input'); // input, loading, results, confirm
     const [request, setRequest] = useState('');
     const [offers, setOffers] = useState([]);
@@ -98,6 +97,12 @@ const RequestOfferModal = ({ isOpen, onClose, language }) => {
     const handleSelectOffer = (offer) => {
         setSelectedOffer(offer);
         setStep('confirm');
+    };
+
+    const handleConfirm = () => {
+         // Propagate the full offer list up to be saved in project agents field
+         onSaveOffers(offers);
+         resetModal();
     };
 
     const suggestedRequests = [
@@ -182,7 +187,7 @@ const RequestOfferModal = ({ isOpen, onClose, language }) => {
                      ),
                      React.createElement('div', { className: 'flex justify-end gap-4 mt-6' },
                         React.createElement('button', { onClick: () => setStep('results'), className: 'px-6 py-2.5 font-semibold text-brand-text-light bg-dark-card-solid hover:bg-white/10 border border-dark-border rounded-lg' }, "Back"),
-                        React.createElement('button', { onClick: resetModal, className: 'px-6 py-2.5 font-semibold text-white bg-button-gradient hover:opacity-90 rounded-lg shadow-md shadow-brand-purple/20' }, "Create contract")
+                        React.createElement('button', { onClick: handleConfirm, className: 'px-6 py-2.5 font-semibold text-white bg-button-gradient hover:opacity-90 rounded-lg shadow-md shadow-brand-purple/20' }, "Create contract")
                     )
                 );
             default: return null;
@@ -202,7 +207,7 @@ const RequestOfferModal = ({ isOpen, onClose, language }) => {
     );
 };
 
-const AgentView = ({ language }) => {
+const AgentView = ({ language, projectData, onUpdateProject }) => {
     const t = i18n[language];
     const fullscreenRef = useRef(null);
     const contentRef = useRef(null);
@@ -217,12 +222,35 @@ const AgentView = ({ language }) => {
     const handleToggleEdit = () => setIsEditing(prev => !prev);
     const handleExport = () => window.print();
 
-    const partners = [
+    // Handle saving new offers to project data
+    const handleSaveOffers = (newOffers) => {
+        const existingAgents = projectData?.agents || [];
+        const updatedAgents = [...existingAgents, ...newOffers];
+        onUpdateProject({ agents: updatedAgents });
+    };
+
+    const defaultPartners = [
         { name: "PixelCraft Agency", service: "UI/UX Design services", status: "Active", contact: { name: "Lisa Johnson", phone: "11234567890", email: "example@mail.com" }, rating: "4/5" },
         { name: "Innovate Solutions", service: "Software Development", status: "Active", contact: { name: "John Doe", phone: "11234567891", email: "john@mail.com" }, rating: "5/5" },
         { name: "DataWeavers Inc.", service: "Data Analytics", status: "Inactive", contact: { name: "Jane Smith", phone: "11234567892", email: "jane@mail.com" }, rating: "4.5/5" },
         { name: "CloudWorks Co.", service: "Cloud Infrastructure", status: "Active", contact: { name: "Peter Jones", phone: "11234567893", email: "peter@mail.com" }, rating: "4.2/5" }
     ];
+
+    // Combine default partners with saved agents for display
+    const allPartners = [...defaultPartners];
+    if (projectData?.agents) {
+        // Transform saved simple agent data to fit PartnerCard if needed
+        // For now, we'll just append them assuming they have similar structure or map them
+        projectData.agents.forEach(agent => {
+             allPartners.push({
+                 name: agent.partner,
+                 service: agent.description,
+                 status: agent.status,
+                 contact: { name: "Unknown", phone: "N/A", email: "N/A" }, // Fill with dummy if missing
+                 rating: "New"
+             });
+        });
+    }
 
     return React.createElement('div', { ref: fullscreenRef, className: 'h-full flex flex-col bg-dark-card text-white printable-container' },
         React.createElement(FeatureToolbar, {
@@ -249,12 +277,17 @@ const AgentView = ({ language }) => {
                 React.createElement('div', { className: 'mt-6' },
                     React.createElement('h3', { className: 'font-bold text-white mb-4' }, 'External Partners'),
                     React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
-                        partners.map(p => React.createElement(PartnerCard, { key: p.name, ...p }))
+                        allPartners.map((p, i) => React.createElement(PartnerCard, { key: i, ...p }))
                     )
                 )
             )
         ),
-        React.createElement(RequestOfferModal, { isOpen: isModalOpen, onClose: () => setIsModalOpen(false), language })
+        React.createElement(RequestOfferModal, { 
+            isOpen: isModalOpen, 
+            onClose: () => setIsModalOpen(false), 
+            language,
+            onSaveOffers: handleSaveOffers
+        })
     );
 };
 

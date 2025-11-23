@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { i18n, DASHBOARD_VIEWS } from '../constants.js';
 import AssistantView from './SciGeniusChat.js';
@@ -11,9 +12,11 @@ import AgentView from './AgentView.js';
 import StructureView from './StructureView.js';
 import KpiView from './KpiView.js';
 import SCurveView from './SCurveView.js';
-import { UserIcon, SidebarToggleIcon, Logo, Spinner } from './Shared.js';
+import ComprehensivePlanView from './ComprehensivePlanView.js';
+import { UserIcon, SidebarToggleIcon, Logo, Spinner, HistoryIcon, PlusIcon } from './Shared.js';
+import { getUserProjects, getProjectDetails, saveProject } from '../services/supabaseClient.js';
 
-const WORKFLOW_ORDER = ['planning', 'scheduling', 'budget', 'risk', 'kpis', 'scurve', 'structure', 'agents', 'assistant'];
+const WORKFLOW_ORDER = ['consultingPlan', 'planning', 'scheduling', 'budget', 'risk', 'kpis', 'scurve', 'structure', 'agents', 'assistant'];
 
 const PREREQUISITES = {
     scheduling: 'plan',
@@ -40,13 +43,27 @@ const ProjectHeader = ({ language, objective, onReset, onNext, onPrev, activeVie
             React.createElement('button', { onClick: onPrev, disabled: WORKFLOW_ORDER.indexOf(activeView) === 0, className: 'p-2 rounded-md text-brand-text-light hover:bg-white/10 hover:text-white disabled:opacity-50' }, '‹ Prev'),
             React.createElement('button', { onClick: onNext, disabled: WORKFLOW_ORDER.indexOf(activeView) === WORKFLOW_ORDER.length - 1, className: 'px-4 py-2 text-sm font-semibold bg-button-gradient text-white rounded-md transition-opacity hover:opacity-90 disabled:opacity-50' }, 'Next ›'),
             React.createElement('div', { className: 'w-px h-6 bg-dark-border mx-2' }),
-            React.createElement('button', { onClick: onReset, className: 'text-sm font-semibold text-red-400 hover:bg-red-500/20 px-3 py-2 rounded-md' }, 'Reset Project')
+            React.createElement('button', { onClick: onReset, className: 'text-sm font-semibold text-red-400 hover:bg-red-500/20 px-3 py-2 rounded-md' }, 'New Project')
         )
     );
 };
 
+const ProjectHistoryList = ({ onSelectProject, projects, language }) => {
+    return React.createElement('div', { className: 'p-4 border-t border-dark-border overflow-y-auto max-h-48' },
+        React.createElement('h4', { className: 'text-xs font-semibold text-brand-text-light uppercase tracking-wider mb-2' }, "Your Projects"),
+        projects.length === 0 ? React.createElement('p', { className: 'text-xs text-slate-500' }, "No saved projects") : 
+        projects.map(p => React.createElement('button', {
+            key: p.id,
+            onClick: () => onSelectProject(p.id),
+            className: 'w-full text-left p-2 rounded-md hover:bg-white/5 mb-1 group'
+        },
+            React.createElement('p', { className: 'text-sm font-medium text-white truncate' }, p.title || "Untitled Project"),
+            React.createElement('p', { className: 'text-xs text-slate-500' }, new Date(p.updated_at).toLocaleDateString())
+        ))
+    );
+}
 
-const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded, onLogout, currentUser, projectData }) => {
+const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded, onLogout, currentUser, projectData, onSelectProject, projects }) => {
     const t = i18n[language];
 
     const getButtonClasses = (isActive, isDisabled) => {
@@ -79,7 +96,7 @@ const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded,
         },
             isExpanded && React.createElement('h2', { className: 'text-xl font-bold bg-gradient-to-r from-cyan-400 via-lime-400 to-yellow-400 text-transparent bg-clip-text' }, 'Dashboard')
         ),
-        React.createElement('div', { className: 'flex-grow p-4 space-y-2' },
+        React.createElement('div', { className: 'flex-grow p-4 space-y-2 overflow-y-auto' },
             DASHBOARD_VIEWS.map(view => {
                 const Icon = view.icon;
                 const isActive = activeView === view.id;
@@ -103,6 +120,9 @@ const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded,
                 )
             })
         ),
+        
+        isExpanded && React.createElement(ProjectHistoryList, { projects, onSelectProject, language }),
+
         React.createElement('div', { className: 'p-4 border-t border-dark-border' },
             React.createElement('button', {
                 onClick: () => setExpanded(!isExpanded),
@@ -125,9 +145,11 @@ const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded,
 
 
 const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) => {
-  const [activeView, setActiveView] = useState('planning');
+  const [activeView, setActiveView] = useState('consultingPlan');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [projectData, setProjectData] = useState({});
+  const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [userProjects, setUserProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -137,13 +159,68 @@ const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) =
       return React.createElement('div', {className: 'container mx-auto p-4 md:p-8'}, React.createElement(AuthRequired, { language, onLoginClick }));
   }
 
-  const handleUpdateProject = (newData) => {
-    setProjectData(prev => ({...prev, ...newData}));
+  // Fetch list of projects on load
+  useEffect(() => {
+    const fetchProjects = async () => {
+        if (currentUser) {
+            const projects = await getUserProjects();
+            setUserProjects(projects);
+        }
+    };
+    fetchProjects();
+  }, [currentUser, currentProjectId]); // Re-fetch when project changes/added
+
+  // Load a specific project
+  const handleSelectProject = async (projectId) => {
+    setIsLoading(true);
+    try {
+        const data = await getProjectDetails(projectId);
+        if (data) {
+            setProjectData({
+                objective: data.objective,
+                plan: data.plan,
+                schedule: data.schedule,
+                risk: data.risks,
+                budget: data.budget,
+                structure: data.structure, 
+                kpiReport: data.kpis,
+                sCurveReport: data.s_curve,
+                consultingPlan: data.consulting_plan,
+                agents: data.agents
+            });
+            setCurrentProjectId(data.id);
+            setActiveView('consultingPlan');
+        }
+    } catch (e) {
+        setError("Failed to load project");
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleUpdateProject = async (newData) => {
+    const updatedData = { ...projectData, ...newData };
+    setProjectData(updatedData);
+    
+    // Auto-save to Supabase
+    try {
+        // Only save if there's substantial data (objective or consulting plan title)
+        if (updatedData.objective || updatedData.consultingPlan?.projectTitle) {
+            const savedProject = await saveProject(currentProjectId, updatedData);
+            if (savedProject && !currentProjectId) {
+                setCurrentProjectId(savedProject.id);
+            }
+        }
+    } catch (e) {
+        console.error("Auto-save failed:", e);
+        // Don't block UI on save fail, just log
+    }
   };
 
   const handleResetProject = () => {
     setProjectData({});
-    setActiveView('planning');
+    setCurrentProjectId(null);
+    setActiveView('consultingPlan');
     setError(null);
   };
   
@@ -173,8 +250,8 @@ const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) =
         setError
     };
     
-    // Check prerequisites for views other than the first one
-    if (activeView !== 'planning') {
+    // Check prerequisites for views other than the first one (planning/consulting) or independent views
+    if (activeView !== 'planning' && activeView !== 'assistant' && activeView !== 'consultingPlan') {
         const prerequisite = PREREQUISITES[activeView];
         if (prerequisite && !projectData[prerequisite]) {
             return React.createElement(PrerequisiteView, { missing: prerequisite, language });
@@ -184,6 +261,8 @@ const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) =
     switch (activeView) {
         case 'assistant':
             return React.createElement(AssistantView, { language, currentUser });
+        case 'consultingPlan':
+            return React.createElement(ComprehensivePlanView, commonProps);
         case 'planning':
             return React.createElement(PlanningView, commonProps);
         case 'scheduling':
@@ -193,24 +272,35 @@ const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) =
         case 'scurve':
             return React.createElement(SCurveView, commonProps);
         case 'structure':
-            return React.createElement(StructureView, { ...commonProps, onUpdateProject: handleUpdateProject });
+            return React.createElement(StructureView, commonProps);
         case 'risk':
             return React.createElement(RiskView, commonProps);
         case 'budget':
             return React.createElement(BudgetView, commonProps);
         case 'agents':
-            return React.createElement(AgentView, { language });
+            return React.createElement(AgentView, commonProps);
         default:
              return React.createElement(PlanningView, commonProps);
     }
   };
 
   return React.createElement('div', { className: 'flex h-screen bg-dark-bg overflow-hidden' },
-    React.createElement(Sidebar, { language, activeView, setActiveView, isExpanded: isSidebarExpanded, setExpanded: setIsSidebarExpanded, onLogout, currentUser, projectData }),
+    React.createElement(Sidebar, { 
+        language, 
+        activeView, 
+        setActiveView, 
+        isExpanded: isSidebarExpanded, 
+        setExpanded: setIsSidebarExpanded, 
+        onLogout, 
+        currentUser, 
+        projectData,
+        projects: userProjects,
+        onSelectProject: handleSelectProject
+    }),
     React.createElement('main', { className: 'flex-1 p-6 min-w-0 flex flex-col' },
         React.createElement(ProjectHeader, { 
             language, 
-            objective: projectData.objective, 
+            objective: projectData.objective || projectData.consultingPlan?.projectTitle, 
             onReset: handleResetProject,
             onNext: handleNext,
             onPrev: handlePrev,

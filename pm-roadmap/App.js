@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { AppView, Language, i18n } from './constants.js';
 import Home from './components/Home.js';
@@ -12,8 +11,9 @@ import Privacy from './components/Privacy.js';
 import { UserIcon, Logo, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon } from './components/Shared.js';
 import { isAnyModelConfigured } from './services/geminiService.js';
 import AuthModal from './components/AuthModal.js';
+import { supabase, getCurrentUser, signOut } from './services/supabaseClient.js';
 
-// Welcome Modal Component
+// Welcome Modal Component (Unchanged)
 const WelcomeModal = ({ isOpen, onClose, onAuthClick, language }) => {
     const t = i18n[language];
     if (!isOpen) return null;
@@ -112,7 +112,7 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
   );
 };
 
-// Mobile Menu Component
+// Mobile Menu Component (Unchanged)
 const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLanguage, isAuthenticated, onLoginClick, onLogout }) => {
     if (!isOpen) return null;
     const t = i18n[language];
@@ -165,8 +165,7 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
     );
 };
 
-
-// Footer Component
+// Footer (Unchanged)
 const Footer = ({ language, setView }) => {
   const t = i18n[language];
   const SocialIcon = ({ href, children }) => React.createElement('a', { href, target: "_blank", rel: "noopener noreferrer", className: "w-10 h-10 flex items-center justify-center rounded-full bg-dark-card-solid hover:bg-brand-purple text-white transition-colors" }, children);
@@ -242,46 +241,48 @@ const App = () => {
     document.documentElement.dir = language === Language.AR ? 'rtl' : 'ltr';
   }, [language]);
   
+  // Auth & Init
   useEffect(() => {
     if (!isAnyModelConfigured()) {
         setApiKeyError(true);
     }
-    try {
-        const userJson = localStorage.getItem('pmroadmap_user');
-        if (userJson) {
-            setCurrentUser(JSON.parse(userJson));
-        }
+    
+    // Check Supabase Auth
+    const checkUser = async () => {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+    };
+    checkUser();
 
-        const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeModal');
-        if (!hasSeenWelcome) {
-            setIsWelcomeModalOpen(true);
-            sessionStorage.setItem('hasSeenWelcomeModal', 'true');
-        }
-    } catch (error) {
-        console.error("Could not access browser storage:", error);
+    // Listener for auth state changes
+    let subscription;
+    if (supabase) {
+        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                 const user = await getCurrentUser();
+                 setCurrentUser(user);
+                 setIsAuthModalOpen(false);
+                 setView(AppView.Dashboard);
+            } else if (event === 'SIGNED_OUT') {
+                setCurrentUser(null);
+                setView(AppView.Home);
+            }
+        });
+        subscription = data.subscription;
+    }
+
+    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeModal');
+    if (!hasSeenWelcome) {
         setIsWelcomeModalOpen(true);
+        sessionStorage.setItem('hasSeenWelcomeModal', 'true');
     }
   }, []);
 
-  const handleLoginSuccess = (user) => {
-    try {
-        localStorage.setItem('pmroadmap_user', JSON.stringify(user));
-        setCurrentUser(user);
-        setIsAuthModalOpen(false);
-        setView(AppView.Dashboard); // Go to dashboard on login
-    } catch (error) {
-        console.error("Could not write to localStorage:", error);
-    }
-  };
   
-  const handleLogout = () => {
-    try {
-        localStorage.removeItem('pmroadmap_user');
-        setCurrentUser(null);
-        setView(AppView.Home);
-    } catch (error) {
-        console.error("Could not remove from localStorage:", error);
-    }
+  const handleLogout = async () => {
+    await signOut();
+    setCurrentUser(null);
+    setView(AppView.Home);
   };
 
   const renderView = () => {
@@ -340,7 +341,6 @@ const App = () => {
     React.createElement(AuthModal, {
       isOpen: isAuthModalOpen,
       onClose: () => setIsAuthModalOpen(false),
-      onLoginSuccess: handleLoginSuccess,
       language: language,
       setView: setView
     }),

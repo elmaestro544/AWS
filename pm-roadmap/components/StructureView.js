@@ -1,3 +1,4 @@
+
 // components/StructureView.js
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -212,13 +213,10 @@ const ResultsView = ({ data, onReset }) => {
 };
 
 
-const StructureView = ({ language }) => {
+const StructureView = ({ language, projectData, onUpdateProject, isLoading, setIsLoading, error, setError }) => {
     const t = i18n[language];
     const fullscreenRef = useRef(null);
     const contentRef = useRef(null);
-    const [viewState, setViewState] = useState('input'); // input, loading, results
-    const [structureData, setStructureData] = useState(null);
-    const [error, setError] = useState(null);
     const [objective, setObjective] = useState('');
 
     // Toolbar state and handlers
@@ -232,41 +230,37 @@ const StructureView = ({ language }) => {
 
     const handleGenerate = async () => {
         if (!objective.trim()) return;
-        setViewState('loading');
+        setIsLoading(true);
         setError(null);
         try {
             const data = await generateProjectStructure(objective);
-            setStructureData(data);
-            setViewState('results');
+            onUpdateProject({ structure: data }); // Save to parent
         } catch (err) {
             setError(err.message || 'An unexpected error occurred.');
-            setViewState('input'); // Return to input on error
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleReset = () => {
-        setStructureData(null);
+        onUpdateProject({ structure: null });
         setError(null);
         setObjective('');
-        setViewState('input');
     };
     
+    const hasStructure = !!projectData.structure;
+
     const renderContent = () => {
-        switch (viewState) {
-            case 'loading':
-                return React.createElement(LoadingView, null);
-            case 'results':
-                return React.createElement(ResultsView, { data: structureData, onReset: handleReset });
-            case 'input':
-            default:
-                return React.createElement(InputView, {
+        if (isLoading) return React.createElement(LoadingView, null);
+        if (hasStructure) return React.createElement(ResultsView, { data: projectData.structure, onReset: handleReset });
+        
+        return React.createElement(InputView, {
                     onGenerate: handleGenerate,
                     objective: objective,
                     setObjective: setObjective,
-                    isLoading: viewState === 'loading',
+                    isLoading: false,
                     error: error,
                 });
-        }
     };
     
     return React.createElement('div', { ref: fullscreenRef, className: "h-full flex flex-col text-white bg-dark-card printable-container" },
@@ -287,7 +281,7 @@ const StructureView = ({ language }) => {
                contentEditable: isEditing,
                suppressContentEditableWarning: true
             },
-                viewState === 'results' 
+                hasStructure
                     ? renderContent()
                     : React.createElement('div', { className: 'h-full w-full flex items-center justify-center' }, renderContent())
             )
