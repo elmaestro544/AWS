@@ -142,40 +142,88 @@
 
         /* Print-specific styles */
         @media print {
-            body, #root {
+            @page {
+                size: auto;
+                margin: 0mm;
+            }
+
+            html, body, #root, main {
+                height: auto !important;
+                min-height: 0 !important;
+                width: 100% !important;
+                overflow: visible !important;
+                position: static !important;
                 background-color: #ffffff !important;
                 color: #000000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
             }
-            header, aside, .non-printable {
+
+            /* Reset Flexbox and Grid Layouts that confine height */
+            .flex, .h-screen, .min-h-screen, .h-full, .flex-1, .flex-grow, .overflow-hidden, .overflow-y-auto, .overflow-auto {
+                height: auto !important;
+                min-height: 0 !important;
+                flex: none !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+
+            /* Hide non-printable elements */
+            header, aside, .non-printable, footer, .sidebar-glow {
                 display: none !important;
             }
-            main {
-                padding: 0 !important;
-                margin: 0 !important;
-            }
+
+            /* Printable container specific overrides */
             .printable-container {
                 height: auto !important;
+                width: 100% !important;
                 overflow: visible !important;
                 border: none !important;
                 box-shadow: none !important;
-                padding: 0 !important;
-                border-radius: 0 !important;
+                padding: 20px !important;
+                margin: 0 !important;
+                position: static !important;
+                display: block !important;
+                background-color: white !important;
             }
+
             .printable-content {
-                transform: scale(1) !important; /* Reset zoom for printing */
-                padding: 1rem;
-                color: #000 !important;
+                transform: none !important; /* Reset zoom */
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                display: block !important;
             }
-            /* Hide scrollbars for print */
-            ::-webkit-scrollbar {
-                display: none;
-            }
-            /* Adjust text colors for readability on white background */
+
+            /* Content Styling for Print */
             .printable-content * {
                 color: #000 !important;
+                text-shadow: none !important;
                 background-color: transparent !important;
+                box-shadow: none !important;
+            }
+            
+            /* Borders */
+            .border, .border-b, .border-t, .border-l, .border-r {
+                border-color: #e5e7eb !important; /* gray-200 */
+            }
+
+            /* Page Breaks */
+            .break-before-page {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
+            .break-inside-avoid {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Hide scrollbars */
+            ::-webkit-scrollbar {
+                display: none;
             }
         }
     </style>

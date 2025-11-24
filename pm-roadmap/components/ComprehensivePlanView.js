@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import { generateConsultingPlan } from '../services/comprehensivePlanService.js';
 import { DocumentIcon, Spinner, FeatureToolbar } from './Shared.js';
@@ -111,6 +112,37 @@ const InputView = ({ onGenerate, isLoading, error }) => {
         location: ''
     });
 
+    const predefinedFields = [
+        "Construction & Engineering",
+        "Software Development & IT",
+        "Marketing & Advertising",
+        "Healthcare & Pharmaceuticals",
+        "Manufacturing & Logistics",
+        "Education & Training",
+        "Finance & Banking",
+        "Energy, Oil & Gas",
+        "Government & Public Sector",
+        "Event Management",
+        "Real Estate",
+        "Telecommunications"
+    ];
+
+    const predefinedLocations = [
+        "Saudi Arabia",
+        "United Arab Emirates",
+        "Egypt",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman",
+        "United States",
+        "United Kingdom",
+        "Canada",
+        "Germany",
+        "France",
+        "Global / Remote"
+    ];
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -129,11 +161,15 @@ const InputView = ({ onGenerate, isLoading, error }) => {
                 React.createElement('label', { className: 'block text-sm font-medium text-brand-text-light mb-1' }, "Field of Work (e.g., Construction, IT)"),
                 React.createElement('input', {
                     name: 'field',
+                    list: 'field-options',
                     value: formData.field,
                     onChange: handleChange,
-                    placeholder: "e.g., Urban Infrastructure Construction",
+                    placeholder: "Select or type field of work...",
                     className: 'w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none'
-                })
+                }),
+                React.createElement('datalist', { id: 'field-options' },
+                    predefinedFields.map((f, i) => React.createElement('option', { key: i, value: f }))
+                )
             ),
             React.createElement('div', null,
                 React.createElement('label', { className: 'block text-sm font-medium text-brand-text-light mb-1' }, "Project Name"),
@@ -160,11 +196,15 @@ const InputView = ({ onGenerate, isLoading, error }) => {
                 React.createElement('label', { className: 'block text-sm font-medium text-brand-text-light mb-1' }, "Geographical Location"),
                 React.createElement('input', {
                     name: 'location',
+                    list: 'location-options',
                     value: formData.location,
                     onChange: handleChange,
-                    placeholder: "e.g., Riyadh, Saudi Arabia",
+                    placeholder: "Select or type location...",
                     className: 'w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none'
-                })
+                }),
+                React.createElement('datalist', { id: 'location-options' },
+                    predefinedLocations.map((l, i) => React.createElement('option', { key: i, value: l }))
+                )
             ),
             error && React.createElement('div', { className: "bg-red-500/10 border border-red-500/30 text-center p-2 rounded-md text-sm text-red-400 font-semibold" }, error),
             React.createElement('button', {
@@ -297,7 +337,7 @@ const ComprehensivePlanView = ({ language, projectData, onUpdateProject, isLoadi
     const hasPlan = !!projectData.consultingPlan;
 
     return React.createElement('div', { ref: fullscreenRef, className: "h-full flex flex-col text-white bg-dark-card printable-container" },
-        React.createElement(FeatureToolbar, {
+        hasPlan && React.createElement(FeatureToolbar, {
             title: t.dashboardConsultingPlan,
             containerRef: fullscreenRef,
             onZoomIn: handleZoomIn,
