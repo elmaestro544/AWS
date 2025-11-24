@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { i18n, AppView } from '../constants.js';
 import { PlanningIcon, RiskIcon, BudgetIcon, AgentIcon, ScheduleIcon, CheckIcon, CloseIcon } from './Shared.js';
@@ -46,7 +47,7 @@ const FeatureModal = ({ feature, onClose, language }) => {
     );
 };
 
-// --- Animated Cityscape Component (New & Updated) ---
+// --- Animated Cityscape Component (Unchanged) ---
 const AnimatedCityscape = () => {
     const [animationKey, setAnimationKey] = useState(0);
 
@@ -224,9 +225,13 @@ const AnimatedCityscape = () => {
 };
 
 
-const Home = ({ language, setView }) => {
+const Home = ({ language, setView, settings }) => {
     const t = i18n[language];
     const [activeFeature, setActiveFeature] = useState(null);
+
+    // Default fallback for settings
+    const bgIntensity = settings?.bgIntensity ?? 0.6;
+    const showCityscape = settings?.showCityscape ?? true;
 
     const features = [
         { 
@@ -270,11 +275,32 @@ const Home = ({ language, setView }) => {
         }, [features.length]);
 
         return React.createElement('section', { className: 'relative overflow-hidden' },
+            // START NEW CODE: Gradient Lights controlled by Admin Settings
+             React.createElement('div', { className: 'absolute top-0 inset-x-0 h-[800px] pointer-events-none z-0' },
+                // Top Glow Line
+                React.createElement('div', { className: 'absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-brand-purple-light to-transparent', style: { opacity: 0.7 + (bgIntensity * 0.3), boxShadow: `0 0 40px rgba(94,234,212,${0.6 * bgIntensity})` } }),
+                // Main Turquoise Glow
+                React.createElement('div', { 
+                    className: 'absolute top-[-400px] left-1/2 -translate-x-1/2 w-[1200px] h-[800px] blur-[120px] rounded-full',
+                    style: { background: 'radial-gradient(circle, #2DD4BF 0%, transparent 70%)', opacity: 0.4 * bgIntensity }
+                }),
+                // Green Hint Left
+                React.createElement('div', { 
+                     className: 'absolute top-[-300px] left-[10%] w-[800px] h-[600px] blur-[100px] rounded-full',
+                     style: { background: 'radial-gradient(circle, #A3E635 0%, transparent 70%)', opacity: 0.2 * bgIntensity }
+                }),
+                // Yellow Hint Right
+                 React.createElement('div', { 
+                     className: 'absolute top-[-300px] right-[10%] w-[800px] h-[600px] blur-[100px] rounded-full',
+                     style: { background: 'radial-gradient(circle, #FACC15 0%, transparent 70%)', opacity: 0.2 * bgIntensity }
+                })
+            ),
+            // END NEW CODE
             React.createElement('div', { 
                 className: 'absolute inset-x-0 bottom-0 z-0 h-[50vh] max-h-[400px] w-full flex items-end justify-center overflow-hidden',
                 'aria-hidden': 'true'
             },
-                React.createElement(AnimatedCityscape, null)
+                showCityscape && React.createElement(AnimatedCityscape, null)
             ),
             React.createElement('div', { className: 'container mx-auto px-6 py-20 md:py-32' },
                  React.createElement('div', { className: 'relative z-10 grid md:grid-cols-2 gap-12 items-center' },

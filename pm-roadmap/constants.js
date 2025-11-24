@@ -8,6 +8,7 @@ export const AppView = Object.freeze({
   Contact: 'contact',
   Pricing: 'pricing',
   Dashboard: 'dashboard', // Changed from SciGeniusChat
+  Admin: 'admin', // New Admin View
   Terms: 'terms',
   Privacy: 'privacy',
 });
@@ -42,6 +43,7 @@ export const i18n = {
     navTerms: "Terms & Conditions",
     navPrivacy: "Privacy Policy",
     navDashboard: "Dashboard",
+    navAdmin: "Admin Dashboard",
     // Home - Hero
     homeHeroTitle: "Revolutionizing Project & Construction Management with AI",
     homeHeroDescription: "Cutting-edge AI capabilities that significantly transform how construction and project teams collaborate and work together efficiently.",
@@ -186,6 +188,7 @@ export const i18n = {
     navTerms: "الشروط والأحكام",
     navPrivacy: "سياسة الخصوصية",
     navDashboard: "لوحة التحكم",
+    navAdmin: "لوحة الإدارة",
     // Home - Hero
     homeHeroTitle: "ثورة في إدارة المشاريع والإنشاءات بالذكاء الاصطناعي",
     homeHeroDescription: "قدرات ذكاء اصطناعي متطورة تغير بشكل جذري كيفية تعاون فرق البناء والمشاريع وعملها معًا بكفاءة.",

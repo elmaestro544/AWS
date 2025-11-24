@@ -8,7 +8,8 @@ import Contact from './components/Contact.js';
 import Pricing from './components/Pricing.js';
 import Terms from './components/Terms.js';
 import Privacy from './components/Privacy.js';
-import { UserIcon, Logo, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon } from './components/Shared.js';
+import AdminDashboard from './components/AdminDashboard.js';
+import { UserIcon, Logo, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon, SettingsIcon } from './components/Shared.js';
 import { isAnyModelConfigured } from './services/geminiService.js';
 import AuthModal from './components/AuthModal.js';
 import { supabase, getCurrentUser, signOut } from './services/supabaseClient.js';
@@ -100,13 +101,32 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
                  onClick: () => setView(AppView.Dashboard), 
                  className: "font-semibold bg-button-gradient text-white px-5 py-2 rounded-lg transition-opacity hover:opacity-90 shadow-md shadow-brand-purple/20 text-sm" 
              }, t.navDashboard),
-             React.createElement('div', { className: 'flex items-center gap-2 pl-4 border-l border-white/10' },
-                React.createElement('div', { className: 'w-8 h-8 rounded-full bg-brand-purple/20 flex items-center justify-center text-brand-purple-light border border-brand-purple/30' },
-                    React.createElement(UserIcon, { className: 'w-5 h-5' })
+             React.createElement('div', { className: 'flex items-center gap-2 pl-4 border-l border-white/10 relative' },
+                React.createElement('button', { 
+                    onClick: () => setIsUserMenuOpen(!isUserMenuOpen),
+                    className: 'flex items-center gap-2 focus:outline-none'
+                },
+                    React.createElement('div', { className: 'w-8 h-8 rounded-full bg-brand-purple/20 flex items-center justify-center text-brand-purple-light border border-brand-purple/30' },
+                        React.createElement(UserIcon, { className: 'w-5 h-5' })
+                    ),
+                    React.createElement('div', { className: 'flex flex-col items-start' },
+                        React.createElement('span', { className: 'text-sm font-semibold text-white leading-none' }, currentUser?.fullName?.split(' ')[0] || 'User'),
+                        React.createElement('span', { className: 'text-[10px] text-brand-text-light' }, "My Account")
+                    )
                 ),
-                React.createElement('div', { className: 'flex flex-col' },
-                    React.createElement('span', { className: 'text-sm font-semibold text-white leading-none' }, currentUser?.fullName?.split(' ')[0] || 'User'),
-                    React.createElement('button', { onClick: onLogout, className: 'text-xs text-brand-text-light hover:text-white text-left mt-0.5' }, t.logout)
+                // User Dropdown
+                isUserMenuOpen && React.createElement('div', { 
+                    className: "absolute top-full right-0 mt-2 w-48 bg-dark-card-solid border border-dark-border rounded-lg shadow-xl py-2 z-50 animate-fade-in-up"
+                },
+                    React.createElement('button', {
+                         onClick: () => { setView(AppView.Admin); setIsUserMenuOpen(false); },
+                         className: "w-full text-left px-4 py-2 text-sm text-brand-text-light hover:bg-white/10 hover:text-white flex items-center gap-2"
+                    }, React.createElement(SettingsIcon, { className: "w-4 h-4" }), t.navAdmin),
+                    React.createElement('div', { className: "border-t border-dark-border my-1" }),
+                    React.createElement('button', {
+                        onClick: () => { onLogout(); setIsUserMenuOpen(false); },
+                        className: "w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/10 hover:text-red-300"
+                    }, t.logout)
                 )
              )
           )
@@ -126,7 +146,7 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
   );
 };
 
-// Mobile Menu Component (Unchanged)
+// Mobile Menu Component
 const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLanguage, isAuthenticated, onLoginClick, onLogout }) => {
     if (!isOpen) return null;
     const t = i18n[language];
@@ -168,7 +188,11 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
                         onClick: () => handleNavigate(link), 
                         className: `w-full text-lg py-3 rounded-md hover:bg-dark-card-solid ${ currentView === link.view ? 'text-brand-purple-light' : 'text-white'}` 
                     }, link.label)
-                )
+                ),
+                React.createElement('button', {
+                    onClick: () => { setView(AppView.Admin); onClose(); },
+                    className: `w-full text-lg py-3 rounded-md hover:bg-dark-card-solid text-brand-text-light`
+                }, t.navAdmin)
             ),
             React.createElement('div', { className: 'mt-auto pt-6 border-t border-dark-border space-y-4' },
                 isAuthenticated 
@@ -179,8 +203,8 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
     );
 };
 
-// Footer (Unchanged)
-const Footer = ({ language, setView }) => {
+// Footer
+const Footer = ({ language, setView, contactEmail }) => {
   const t = i18n[language];
   const SocialIcon = ({ href, children }) => React.createElement('a', { href, target: "_blank", rel: "noopener noreferrer", className: "w-10 h-10 flex items-center justify-center rounded-full bg-dark-card-solid hover:bg-brand-purple text-white transition-colors" }, children);
 
@@ -200,7 +224,8 @@ const Footer = ({ language, setView }) => {
           React.createElement('ul', { className: "space-y-3" },
             React.createElement('li', null, React.createElement('button', { onClick: () => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navFeatures)),
             React.createElement('li', null, React.createElement('button', { onClick: () => document.getElementById('industries')?.scrollIntoView({ behavior: 'smooth' }), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navIndustries)),
-            React.createElement('li', null, React.createElement('button', { onClick: () => setView(AppView.Contact), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navContact))
+            React.createElement('li', null, React.createElement('button', { onClick: () => setView(AppView.Contact), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navContact)),
+            React.createElement('li', null, React.createElement('button', { onClick: () => setView(AppView.Admin), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navAdmin))
           )
         ),
         // Column 3: Help
@@ -215,7 +240,7 @@ const Footer = ({ language, setView }) => {
         // Column 4: Contact
         React.createElement('div', null,
           React.createElement('h3', { className: "font-bold text-lg text-white mb-4" }, t.navContact),
-          React.createElement('p', { className: "text-brand-text-light" }, "info@roadmap.casa")
+          React.createElement('p', { className: "text-brand-text-light" }, contactEmail)
         )
       ),
       React.createElement('div', { className: "mt-12 border-t border-dark-border pt-8 flex flex-col md:flex-row justify-between items-center" },
@@ -240,6 +265,35 @@ const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
+  
+  // Admin Logic
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  
+  // Admin Settings State
+  const [adminSettings, setAdminSettings] = useState(() => {
+      // Attempt to load from localStorage, otherwise default
+      try {
+        const saved = localStorage.getItem('adminSettings');
+        return saved ? JSON.parse(saved) : {
+            bgIntensity: 0.6,
+            showCityscape: true,
+            contactEmail: 'info@roadmap.casa',
+            contactPhone: '+1 (555) 123-4567'
+        };
+      } catch (e) {
+        return {
+            bgIntensity: 0.6,
+            showCityscape: true,
+            contactEmail: 'info@roadmap.casa',
+            contactPhone: '+1 (555) 123-4567'
+        };
+      }
+  });
+
+  const updateAdminSettings = (newSettings) => {
+      setAdminSettings(newSettings);
+      localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+  };
 
   useEffect(() => {
     // Force dark theme
@@ -303,15 +357,26 @@ const App = () => {
     const props = { language, setView, currentUser, theme, onLoginClick: () => setIsAuthModalOpen(true) };
     
     switch (view) {
-      case AppView.Home: return React.createElement(Home, props);
-      case AppView.Dashboard: return React.createElement(Dashboard, { ...props, onLogout: handleLogout });
+      case AppView.Home: 
+        return React.createElement(Home, { ...props, settings: adminSettings });
+      case AppView.Dashboard: 
+        return React.createElement(Dashboard, { ...props, onLogout: handleLogout });
+      case AppView.Admin:
+         return React.createElement(AdminDashboard, { 
+             language, 
+             settings: adminSettings, 
+             onUpdateSettings: updateAdminSettings,
+             isAuthenticated: isAdminAuthenticated,
+             onLogin: () => setIsAdminAuthenticated(true),
+             onLogout: () => setIsAdminAuthenticated(false)
+         });
       case AppView.About: return React.createElement(About, props);
-      case AppView.Contact: return React.createElement(Contact, props);
+      case AppView.Contact: return React.createElement(Contact, { ...props, settings: adminSettings });
       case AppView.Pricing: return React.createElement(Pricing, props);
       case AppView.Terms: return React.createElement(Terms, props);
       case AppView.Privacy: return React.createElement(Privacy, props);
       default: 
-        return React.createElement(Home, props);
+        return React.createElement(Home, { ...props, settings: adminSettings });
     }
   };
 
@@ -352,7 +417,11 @@ const App = () => {
         renderView()
       )
     ),
-    (view !== AppView.Dashboard) && React.createElement(Footer, { language: language, setView: setView }),
+    (view !== AppView.Dashboard && view !== AppView.Admin) && React.createElement(Footer, { 
+        language: language, 
+        setView: setView, 
+        contactEmail: adminSettings.contactEmail 
+    }),
     React.createElement(AuthModal, {
       isOpen: isAuthModalOpen,
       onClose: () => setIsAuthModalOpen(false),

@@ -1,8 +1,11 @@
+
 import React from 'react';
 import { i18n } from '../constants.js';
 
-const Contact = ({ language }) => {
+const Contact = ({ language, settings }) => {
     const t = i18n[language];
+    const contactEmail = settings?.contactEmail || 'info@roadmap.casa';
+    const contactPhone = settings?.contactPhone || '';
 
     const Illustration = () => (
         React.createElement('div', { className: 'flex items-center justify-center p-8' },
@@ -45,8 +48,13 @@ const Contact = ({ language }) => {
         ),
         React.createElement('div', { className: 'max-w-4xl mx-auto bg-white dark:bg-dark-card rounded-lg shadow-xl overflow-hidden' },
             React.createElement('div', { className: 'grid md:grid-cols-2' },
-                React.createElement('div', { className: 'hidden md:block' },
-                    React.createElement(Illustration, null)
+                React.createElement('div', { className: 'hidden md:block relative' },
+                    React.createElement(Illustration, null),
+                    React.createElement('div', { className: 'absolute bottom-8 left-0 right-0 text-center px-4' },
+                        React.createElement('p', { className: 'text-brand-text-light font-medium' }, "Reach us directly:"),
+                        React.createElement('p', { className: 'text-white font-bold' }, contactEmail),
+                        contactPhone && React.createElement('p', { className: 'text-white font-bold' }, contactPhone)
+                    )
                 ),
                 React.createElement('div', { className: 'p-8' },
                     React.createElement('form', { action: '#', method: 'POST', className: 'space-y-6' },
