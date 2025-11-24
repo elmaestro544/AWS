@@ -1,12 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { i18n } from '../constants.js';
-import { SettingsIcon, CheckIcon, LockIcon } from './Shared.js';
+import { SettingsIcon, CheckIcon, LockIcon, Spinner } from './Shared.js';
+import { fetchAvailableModels } from '../services/geminiService.js';
 
 const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated, onLogout }) => {
     const t = i18n[language];
     const [formData, setFormData] = useState(settings);
     const [isSaved, setIsSaved] = useState(false);
+    const [availableModels, setAvailableModels] = useState([]);
+    const [isLoadingModels, setIsLoadingModels] = useState(false);
+    const [modelFetchError, setModelFetchError] = useState('');
 
     // Update local state if props change
     useEffect(() => {
@@ -40,6 +44,34 @@ const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated,
         }));
     };
 
+    const handleFetchModels = async () => {
+        if (!formData.aiApiKey && formData.aiProvider !== 'google') {
+            setModelFetchError('API Key is required to fetch models for this provider.');
+            return;
+        }
+        
+        setIsLoadingModels(true);
+        setModelFetchError('');
+        try {
+            // If google, we might rely on env key if local is empty
+            const keyToUse = formData.aiApiKey || window.process?.env?.API_KEY;
+            const models = await fetchAvailableModels(formData.aiProvider, keyToUse);
+            setAvailableModels(models);
+            
+            // If current model isn't in list, select first one
+            if (models.length > 0 && !models.find(m => m.id === formData.aiModel)) {
+                setFormData(prev => ({ ...prev, aiModel: models[0].id }));
+            }
+        } catch (err) {
+            setModelFetchError(err.message || 'Failed to fetch models');
+            // Fallback defaults if fetch fails
+            if (formData.aiProvider === 'openai') setAvailableModels([{id: 'gpt-4o', name: 'GPT-4o'}, {id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo'}]);
+            if (formData.aiProvider === 'perplexity') setAvailableModels([{id: 'sonar-pro', name: 'Sonar Pro'}, {id: 'sonar', name: 'Sonar'}]);
+        } finally {
+            setIsLoadingModels(false);
+        }
+    };
+
     const handleSave = (e) => {
         e.preventDefault();
         onUpdateSettings(formData);
@@ -55,7 +87,7 @@ const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated,
                 ),
                 React.createElement('div', null,
                     React.createElement('h1', { className: "text-3xl font-bold text-white" }, "Platform Administration"),
-                    React.createElement('p', { className: "text-brand-text-light" }, "Manage global application visuals and contact details.")
+                    React.createElement('p', { className: "text-brand-text-light" }, "Manage global application visuals, contact details, and AI settings.")
                 )
             ),
             React.createElement('button', {
@@ -73,6 +105,78 @@ const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated,
             
             React.createElement('form', { onSubmit: handleSave, className: "space-y-8 relative z-10" },
                 
+                // AI Configuration Section
+                React.createElement('div', null,
+                    React.createElement('h3', { className: "text-xl font-semibold text-white mb-6 border-b border-dark-border pb-3 flex items-center gap-2" }, 
+                        "🤖 AI Configuration"
+                    ),
+                    React.createElement('div', { className: "grid grid-cols-1 gap-6" },
+                        React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6'},
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: "aiProvider", className: "block text-sm font-medium text-brand-text-light mb-1" }, "AI Provider"),
+                                React.createElement('select', {
+                                    id: "aiProvider",
+                                    name: "aiProvider",
+                                    value: formData.aiProvider || 'google',
+                                    onChange: handleChange,
+                                    className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none"
+                                },
+                                    React.createElement('option', { value: "google" }, "Google Gemini"),
+                                    React.createElement('option', { value: "openai" }, "OpenAI"),
+                                    React.createElement('option', { value: "openrouter" }, "OpenRouter"),
+                                    React.createElement('option', { value: "perplexity" }, "Perplexity")
+                                )
+                            ),
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: "aiApiKey", className: "block text-sm font-medium text-brand-text-light mb-1" }, "API Key"),
+                                React.createElement('input', {
+                                    type: "password",
+                                    id: "aiApiKey",
+                                    name: "aiApiKey",
+                                    value: formData.aiApiKey || '',
+                                    onChange: handleChange,
+                                    placeholder: `Enter ${formData.aiProvider} API key...`,
+                                    className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all hover:border-brand-purple/50"
+                                })
+                            )
+                        ),
+                        
+                        React.createElement('div', null,
+                             React.createElement('div', { className: 'flex justify-between items-end mb-1' },
+                                React.createElement('label', { htmlFor: "aiModel", className: "block text-sm font-medium text-brand-text-light" }, "Model Selection"),
+                                React.createElement('button', {
+                                    type: 'button',
+                                    onClick: handleFetchModels,
+                                    disabled: isLoadingModels,
+                                    className: "text-xs text-brand-purple-light hover:text-white underline disabled:opacity-50"
+                                }, isLoadingModels ? "Fetching..." : "Refresh Models List")
+                             ),
+                             React.createElement('div', { className: 'flex gap-2' },
+                                React.createElement('select', {
+                                    id: "aiModel",
+                                    name: "aiModel",
+                                    value: formData.aiModel || 'gemini-2.5-flash',
+                                    onChange: handleChange,
+                                    className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none"
+                                },
+                                    // Default/Fallback options if fetch hasn't happened
+                                    availableModels.length > 0 
+                                        ? availableModels.map(m => React.createElement('option', { key: m.id, value: m.id }, m.name || m.id))
+                                        : (
+                                            formData.aiProvider === 'google' ? [
+                                                React.createElement('option', { key: "gemini-2.5-flash", value: "gemini-2.5-flash" }, "Gemini 2.5 Flash"),
+                                                React.createElement('option', { key: "gemini-1.5-pro", value: "gemini-1.5-pro" }, "Gemini 1.5 Pro")
+                                            ] : [
+                                                 React.createElement('option', { key: "default", value: formData.aiModel }, formData.aiModel || "Default Model")
+                                            ]
+                                        )
+                                )
+                             ),
+                             modelFetchError && React.createElement('p', { className: "text-xs text-red-400 mt-1" }, modelFetchError)
+                        )
+                    )
+                ),
+
                 // Visual Settings Section
                 React.createElement('div', null,
                     React.createElement('h3', { className: "text-xl font-semibold text-white mb-6 border-b border-dark-border pb-3 flex items-center gap-2" }, 

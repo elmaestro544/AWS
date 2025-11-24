@@ -1,4 +1,5 @@
 
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = window.process?.env?.SUPABASE_URL;
@@ -54,6 +55,38 @@ export const getCurrentUser = async () => {
         ...session.user
     };
 };
+
+// --- User Settings (AI Configuration) ---
+
+export const getUserSettings = async () => {
+    if (!supabase) return null;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+        .from('user_settings')
+        .select('settings')
+        .eq('user_id', user.id)
+        .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found", which is fine
+        console.error("Error fetching user settings:", error);
+    }
+    return data?.settings || null;
+};
+
+export const saveUserSettings = async (settings) => {
+    if (!supabase) throw new Error("Supabase not configured");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const { error } = await supabase
+        .from('user_settings')
+        .upsert({ user_id: user.id, settings: settings });
+
+    if (error) throw error;
+};
+
 
 // --- Project Data Wrappers ---
 

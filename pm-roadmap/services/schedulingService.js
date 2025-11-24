@@ -1,116 +1,62 @@
 
+import { Type } from "@google/genai";
+import { generateAIContent } from "./geminiService.js";
 
-import { GoogleGenAI, Type } from "@google/genai";
-
-// --- API Key and Client Management ---
-const geminiApiKey = window.process?.env?.API_KEY;
-const isValidKey = (key) => !!key && !key.startsWith('YOUR_');
-const isGeminiConfigured = () => isValidKey(geminiApiKey);
-
-const geminiClient = isGeminiConfigured() ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
-const schedulingModel = 'gemini-2.5-flash';
-
-// --- JSON Schema Definition for the Gantt Chart ---
 const ganttChartSchema = {
     type: Type.ARRAY,
-    description: "An array of tasks representing a project schedule for a Gantt chart.",
+    description: "An array of tasks representing a project schedule.",
     items: {
         type: Type.OBJECT,
         properties: {
-            id: { type: Type.STRING, description: "A unique identifier for the task (e.g., 'task-1')." },
-            name: { type: Type.STRING, description: "The name of the task or phase." },
-            start: { type: Type.STRING, description: "The start date of the task in 'YYYY-MM-DD' format." },
-            end: { type: Type.STRING, description: "The end date of the task in 'YYYY-MM-DD' format." },
-            progress: { type: Type.NUMBER, description: "The completion percentage of the task (0-100)." }, // Changed to NUMBER
-            type: { type: Type.STRING, description: "The type of item, e.g., 'project' for a main phase, 'task' for a sub-item, 'milestone' for a key date." },
-            project: { type: Type.STRING, description: "The ID of the parent project/phase, if this is a sub-task. Empty for top-level phases." },
-            dependencies: {
-                type: Type.ARRAY,
-                description: "An array of task IDs that this task depends on.",
-                items: { type: Type.STRING }
-            }
+            id: { type: Type.STRING },
+            name: { type: Type.STRING },
+            start: { type: Type.STRING, description: "YYYY-MM-DD" },
+            end: { type: Type.STRING, description: "YYYY-MM-DD" },
+            progress: { type: Type.NUMBER },
+            type: { type: Type.STRING, description: "'project', 'task', or 'milestone'" },
+            project: { type: Type.STRING, description: "Parent ID" },
+            dependencies: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
         required: ['id', 'name', 'start', 'end', 'progress', 'type']
     }
 };
 
-
-// --- Service Function ---
-/**
- * Generates a full Gantt chart schedule from a project plan.
- * @param {object} projectPlan - The structured project plan with WBS and milestones.
- * @returns {Promise<object>} A structured array of tasks for the Gantt chart.
- */
 export const generateScheduleFromPlan = async (projectPlan) => {
-    if (!geminiClient) {
-        throw new Error("Gemini client is not initialized. Please check your API key.");
-    }
-    
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const projectStartDate = tomorrow.toISOString().split('T')[0];
 
     const prompt = `
-        Based on the provided project plan, create a detailed project schedule suitable for a Gantt chart.
-        The project must start on ${projectStartDate}.
-        
-        Project Plan:
-        ${JSON.stringify(projectPlan, null, 2)}
-
-        Instructions:
-        1. Convert all WBS items and Key Milestones into a flat list of schedule tasks.
-        2. Assign a unique 'id' to each item (e.g., 'phase-1', 'task-1.1', 'milestone-1'). Use a hierarchical naming convention for subtasks.
-        3. For WBS items, use the type 'project'. For their subtasks, use 'task'. For Key Milestones, use 'milestone'.
-        4. Calculate realistic 'start' and 'end' dates in 'YYYY-MM-DD' format for every item based on its duration and logical dependencies. The project starts on ${projectStartDate}.
-        5. Establish logical dependencies between tasks. A task cannot start until its predecessors are complete. Reference dependencies using their unique IDs. For example, 'Design' phase should depend on 'Initiation' phase completion.
-        6. Assign a random but realistic 'progress' value (0-100) for each task to simulate an in-progress project. Milestones that are not yet reached should have 0 progress.
-        7. The output must be a single, valid JSON array that strictly adheres to the provided schema.
+        Create a Gantt chart schedule starting ${projectStartDate}.
+        Project Plan: ${JSON.stringify(projectPlan, null, 2)}
+        Instructions: Convert WBS items/milestones to tasks. Assign 'id', 'start', 'end' dates. 'type' should be 'project' for phases, 'task' for items. Establish dependencies. Return JSON array.
     `;
 
-    try {
-        const result = await geminiClient.models.generateContent({
-            model: schedulingModel,
-            contents: { parts: [{ text: prompt }] },
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: ganttChartSchema,
-                systemInstruction: "You are an expert AI Project Scheduler. Your task is to convert a project plan into a detailed, time-based Gantt chart schedule. You must calculate dates, establish dependencies, and output a valid JSON array matching the required schema.",
-            },
-        });
-        
-        const jsonText = result.text.trim();
-        const scheduleData = JSON.parse(jsonText);
+    const systemInstruction = "You are an expert AI Project Scheduler. Convert plans to Gantt schedules.";
 
-        // Re-structure data for hierarchical display
+    try {
+        const jsonText = await generateAIContent(prompt, ganttChartSchema, systemInstruction);
+        const scheduleData = JSON.parse(jsonText.trim());
+
+        // Post-processing for hierarchy (same as before)
         const projects = scheduleData.filter(item => item.type === 'project').sort((a, b) => a.start.localeCompare(b.start));
         const tasksByProject = scheduleData.filter(item => item.type === 'task').reduce((acc, task) => {
             const projectId = task.project || 'unassigned';
-            if (!acc[projectId]) {
-                acc[projectId] = [];
-            }
+            if (!acc[projectId]) acc[projectId] = [];
             acc[projectId].push(task);
             return acc;
         }, {});
 
-        const hierarchicallySortedData = [];
+        const sorted = [];
         projects.forEach(project => {
-            hierarchicallySortedData.push(project);
-            if (tasksByProject[project.id]) {
-                const sortedTasks = tasksByProject[project.id].sort((a, b) => a.start.localeCompare(b.start));
-                hierarchicallySortedData.push(...sortedTasks);
-            }
+            sorted.push(project);
+            if (tasksByProject[project.id]) sorted.push(...tasksByProject[project.id].sort((a, b) => a.start.localeCompare(b.start)));
         });
-        
-        const milestones = scheduleData.filter(item => item.type === 'milestone').sort((a,b) => a.start.localeCompare(b.start));
-        hierarchicallySortedData.push(...milestones);
+        sorted.push(...scheduleData.filter(item => item.type === 'milestone').sort((a,b) => a.start.localeCompare(b.start)));
+        if (tasksByProject['unassigned']) sorted.push(...tasksByProject['unassigned'].sort((a,b) => a.start.localeCompare(b.start)));
 
-        // Add any orphaned tasks at the end
-        if (tasksByProject['unassigned']) {
-             hierarchicallySortedData.push(...tasksByProject['unassigned'].sort((a,b) => a.start.localeCompare(b.start)));
-        }
-
-        return hierarchicallySortedData;
+        return sorted;
 
     } catch (error) {
         console.error("Error generating project schedule:", error);

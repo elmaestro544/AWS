@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { AppView, Language, i18n } from './constants.js';
 import Home from './components/Home.js';
@@ -9,6 +11,7 @@ import Pricing from './components/Pricing.js';
 import Terms from './components/Terms.js';
 import Privacy from './components/Privacy.js';
 import AdminDashboard from './components/AdminDashboard.js';
+import UserSettings from './components/UserSettings.js'; // Import
 import { UserIcon, Logo, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon, SettingsIcon } from './components/Shared.js';
 import { isAnyModelConfigured } from './services/geminiService.js';
 import AuthModal from './components/AuthModal.js';
@@ -119,9 +122,13 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
                     className: "absolute top-full right-0 mt-2 w-48 bg-dark-card-solid border border-dark-border rounded-lg shadow-xl py-2 z-50 animate-fade-in-up"
                 },
                     React.createElement('button', {
+                         onClick: () => { setView(AppView.Settings); setIsUserMenuOpen(false); },
+                         className: "w-full text-left px-4 py-2 text-sm text-brand-text-light hover:bg-white/10 hover:text-white flex items-center gap-2"
+                    }, React.createElement(SettingsIcon, { className: "w-4 h-4" }), t.navSettings),
+                    React.createElement('button', {
                          onClick: () => { onAdminClick(); setIsUserMenuOpen(false); },
                          className: "w-full text-left px-4 py-2 text-sm text-brand-text-light hover:bg-white/10 hover:text-white flex items-center gap-2"
-                    }, React.createElement(SettingsIcon, { className: "w-4 h-4" }), t.navAdmin),
+                    }, React.createElement(LockIcon, { className: "w-4 h-4" }), t.navAdmin),
                     React.createElement('div', { className: "border-t border-dark-border my-1" }),
                     React.createElement('button', {
                         onClick: () => { onLogout(); setIsUserMenuOpen(false); },
@@ -189,6 +196,10 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
                         className: `w-full text-lg py-3 rounded-md hover:bg-dark-card-solid ${ currentView === link.view ? 'text-brand-purple-light' : 'text-white'}` 
                     }, link.label)
                 ),
+                 isAuthenticated && React.createElement('button', {
+                    onClick: () => { setView(AppView.Settings); onClose(); },
+                    className: `w-full text-lg py-3 rounded-md hover:bg-dark-card-solid text-brand-text-light`
+                }, t.navSettings),
                 React.createElement('button', {
                     onClick: () => { onAdminClick(); onClose(); },
                     className: `w-full text-lg py-3 rounded-md hover:bg-dark-card-solid text-brand-text-light`
@@ -272,7 +283,6 @@ const App = () => {
   
   // Admin Settings State
   const [adminSettings, setAdminSettings] = useState(() => {
-      // Attempt to load from localStorage, otherwise default
       try {
         const saved = localStorage.getItem('adminSettings');
         return saved ? JSON.parse(saved) : {
@@ -297,12 +307,10 @@ const App = () => {
   };
 
   useEffect(() => {
-    // Force dark theme
     document.documentElement.classList.add('dark');
   }, []);
 
   const toggleTheme = () => {
-    // Theme toggle disabled for this design
   };
 
   useEffect(() => {
@@ -378,9 +386,6 @@ const App = () => {
       case AppView.Dashboard: 
         return React.createElement(Dashboard, { ...props, onLogout: handleLogout });
       case AppView.Admin:
-         // If we somehow get here without auth (unlikely with flow), AdminDashboard will probably handle or show blank, but safe to redirect if needed.
-         // For now AdminDashboard assumes auth or is purely view. 
-         // But we moved login logic to modal. 
          return React.createElement(AdminDashboard, { 
              language, 
              settings: adminSettings, 
@@ -388,6 +393,8 @@ const App = () => {
              isAuthenticated: isAdminAuthenticated,
              onLogout: () => { setIsAdminAuthenticated(false); setView(AppView.Home); }
          });
+      case AppView.Settings:
+          return React.createElement(UserSettings, { ...props });
       case AppView.About: return React.createElement(About, props);
       case AppView.Contact: return React.createElement(Contact, { ...props, settings: adminSettings });
       case AppView.Pricing: return React.createElement(Pricing, props);
@@ -437,7 +444,7 @@ const App = () => {
         renderView()
       )
     ),
-    (view !== AppView.Dashboard && view !== AppView.Admin) && React.createElement(Footer, { 
+    (view !== AppView.Dashboard && view !== AppView.Admin && view !== AppView.Settings) && React.createElement(Footer, { 
         language: language, 
         setView: setView, 
         contactEmail: adminSettings.contactEmail,
