@@ -21,7 +21,7 @@ const ganttChartSchema = {
             name: { type: Type.STRING, description: "The name of the task or phase." },
             start: { type: Type.STRING, description: "The start date of the task in 'YYYY-MM-DD' format." },
             end: { type: Type.STRING, description: "The end date of the task in 'YYYY-MM-DD' format." },
-            progress: { type: Type.INTEGER, description: "The completion percentage of the task (0-100)." },
+            progress: { type: Type.NUMBER, description: "The completion percentage of the task (0-100)." }, // Changed to NUMBER
             type: { type: Type.STRING, description: "The type of item, e.g., 'project' for a main phase, 'task' for a sub-item, 'milestone' for a key date." },
             project: { type: Type.STRING, description: "The ID of the parent project/phase, if this is a sub-task. Empty for top-level phases." },
             dependencies: {
@@ -114,6 +114,6 @@ export const generateScheduleFromPlan = async (projectPlan) => {
 
     } catch (error) {
         console.error("Error generating project schedule:", error);
-        throw new Error("Failed to generate the project schedule from the plan. The AI model may be busy or the response was invalid.");
+        throw new Error(`Failed to generate the project schedule: ${error.message}`);
     }
 };

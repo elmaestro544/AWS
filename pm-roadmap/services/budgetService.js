@@ -1,3 +1,4 @@
+
 // services/budgetService.js
 
 import { GoogleGenAI, Type } from "@google/genai";
@@ -29,7 +30,7 @@ const budgetEstimationSchema = {
                         description: "A brief description of the team or resource associated with this cost item."
                     },
                     laborHours: {
-                        type: Type.INTEGER,
+                        type: Type.NUMBER, // Changed from INTEGER
                         description: "Estimated total labor hours for this item. Should be 0 if this is a material or non-labor expense."
                     },
                     laborCost: {
@@ -41,7 +42,7 @@ const budgetEstimationSchema = {
                         description: "Estimated cost of materials or non-labor expenses for this item. Should be 0 if this is purely a labor cost."
                     },
                     contingencyPercent: {
-                        type: Type.INTEGER,
+                        type: Type.NUMBER, // Changed from INTEGER
                         description: "A suggested contingency percentage (0-100) for this specific item to account for unforeseen issues."
                     }
                 },
@@ -99,6 +100,6 @@ export const generateProjectBudget = async (projectDetails) => {
 
     } catch (error) {
         console.error("Error generating project budget:", error);
-        throw new Error("Failed to generate the project budget. The AI model may be temporarily unavailable or the request could not be processed.");
+        throw new Error(`Failed to generate the project budget: ${error.message}`);
     }
 };

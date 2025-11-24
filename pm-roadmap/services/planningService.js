@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 
 // --- API Key and Client Management ---
@@ -33,12 +34,12 @@ const projectPlanSchema = {
                         description: "A detailed description of the task, including its purpose, scope, and key activities."
                     },
                     durationInDays: {
-                        type: Type.INTEGER,
-                        description: "The estimated number of days to complete this entire task, as an integer."
+                        type: Type.NUMBER, // Changed from INTEGER for robustness
+                        description: "The estimated number of days to complete this entire task."
                     },
                     assigneeCount: {
-                        type: Type.INTEGER,
-                        description: "The suggested number of people to be assigned to this task, as an integer."
+                        type: Type.NUMBER, // Changed from INTEGER for robustness
+                        description: "The suggested number of people to be assigned to this task."
                     },
                     subtasks: {
                         type: Type.ARRAY,
@@ -51,8 +52,8 @@ const projectPlanSchema = {
                                     description: "The specific, actionable name of the subtask (e.g., 'Conduct competitor analysis')."
                                 },
                                 durationInDays: {
-                                    type: Type.INTEGER,
-                                    description: "The estimated number of days for this specific subtask, as an integer."
+                                    type: Type.NUMBER, // Changed from INTEGER for robustness
+                                    description: "The estimated number of days for this specific subtask."
                                 }
                             },
                             required: ['name', 'durationInDays']
@@ -77,12 +78,12 @@ const projectPlanSchema = {
                         description: "The specific, measurable criteria that must be met for the milestone to be considered complete."
                     },
                     durationInDays: {
-                        type: Type.INTEGER,
-                        description: "The estimated duration in days associated with achieving this milestone, as an integer."
+                        type: Type.NUMBER, // Changed from INTEGER for robustness
+                        description: "The estimated duration in days associated with achieving this milestone."
                     },
                      assigneeCount: {
-                        type: Type.INTEGER,
-                        description: "The suggested number of people whose work contributes to this milestone, as an integer."
+                        type: Type.NUMBER, // Changed from INTEGER for robustness
+                        description: "The suggested number of people whose work contributes to this milestone."
                     }
                 },
                 required: ['name', 'acceptanceCriteria', 'durationInDays', 'assigneeCount']
@@ -128,6 +129,6 @@ export const generateProjectPlan = async (objective) => {
 
     } catch (error) {
         console.error("Error generating project plan:", error);
-        throw new Error("Failed to generate the project plan. The AI model may be temporarily unavailable or the request could not be processed.");
+        throw new Error(`Failed to generate the project plan: ${error.message}`);
     }
 };
