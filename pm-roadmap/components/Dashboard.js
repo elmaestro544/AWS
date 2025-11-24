@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState, useEffect } from 'react';
 import { i18n, DASHBOARD_VIEWS } from '../constants.js';
 import AssistantView from './SciGeniusChat.js';
@@ -160,13 +162,13 @@ const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick }) =
   // Fetch list of projects on load
   useEffect(() => {
     const fetchProjects = async () => {
-        if (currentUser) {
+        if (currentUser?.id) { // Only fetch if we have a valid user ID
             const projects = await getUserProjects();
             setUserProjects(projects);
         }
     };
     fetchProjects();
-  }, [currentUser, currentProjectId]); // Re-fetch when project changes/added
+  }, [currentUser?.id, currentProjectId]); // Re-fetch when user ID changes (login) or project changes
 
   // Load a specific project
   const handleSelectProject = async (projectId) => {

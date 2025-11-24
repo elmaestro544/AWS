@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useEffect } from 'react';
 import { AppView, Language, i18n } from './constants.js';
 import Home from './components/Home.js';
@@ -324,7 +325,7 @@ const App = () => {
         setApiKeyError(true);
     }
     
-    // Check Supabase Auth
+    // Check Supabase Auth on mount
     const checkUser = async () => {
         const user = await getCurrentUser();
         setCurrentUser(user);
@@ -332,20 +333,25 @@ const App = () => {
     checkUser();
 
     // Listener for auth state changes
-    let subscription;
+    let authListener = null;
     if (supabase) {
         const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            if (event === 'SIGNED_IN') {
+                 // User just signed in
                  const user = await getCurrentUser();
                  setCurrentUser(user);
                  setIsAuthModalOpen(false);
                  setView(AppView.Dashboard);
+            } else if (event === 'TOKEN_REFRESHED') {
+                 // Session refreshed (happens automatically). Just update user state, don't force redirect.
+                 const user = await getCurrentUser();
+                 setCurrentUser(user);
             } else if (event === 'SIGNED_OUT') {
                 setCurrentUser(null);
                 setView(AppView.Home);
             }
         });
-        subscription = data.subscription;
+        authListener = data.subscription;
     }
 
     const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeModal');
@@ -353,13 +359,24 @@ const App = () => {
         setIsWelcomeModalOpen(true);
         sessionStorage.setItem('hasSeenWelcomeModal', 'true');
     }
+
+    // CRITICAL: Cleanup subscription to prevent duplicate listeners/race conditions
+    return () => {
+        if (authListener) authListener.unsubscribe();
+    };
   }, []);
 
   
   const handleLogout = async () => {
     await signOut();
-    setCurrentUser(null);
-    setView(AppView.Home);
+    // The listener will handle state updates for current user and view
+  };
+
+  const handleLoginSuccess = async () => {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      setIsAuthModalOpen(false);
+      setView(AppView.Dashboard);
   };
 
   const handleAdminAccess = () => {
@@ -456,7 +473,8 @@ const App = () => {
       language: language,
       setView: setView,
       initialAdminMode: isAuthModalAdminMode,
-      onAdminLoginSuccess: handleAdminLoginSuccess
+      onAdminLoginSuccess: handleAdminLoginSuccess,
+      onLoginSuccess: handleLoginSuccess
     }),
     React.createElement(WelcomeModal, {
       isOpen: isWelcomeModalOpen,
