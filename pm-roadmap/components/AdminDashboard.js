@@ -1,53 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { i18n } from '../constants.js';
-import { SettingsIcon, CheckIcon, LockIcon, CloseIcon } from './Shared.js';
+import { SettingsIcon, CheckIcon, LockIcon } from './Shared.js';
 
-const AdminLogin = ({ onLogin }) => {
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (password === '1077') {
-            onLogin();
-        } else {
-            setError('Invalid Admin Password');
-            setPassword('');
-        }
-    };
-
-    return React.createElement('div', { className: "flex flex-col items-center justify-center h-full min-h-[60vh] animate-fade-in-up" },
-        React.createElement('div', { className: "bg-dark-card p-8 rounded-2xl border border-dark-border shadow-xl w-full max-w-md glow-border" },
-            React.createElement('div', { className: "flex justify-center mb-6" },
-                React.createElement('div', { className: "p-4 bg-dark-bg rounded-full border border-dark-border" },
-                    React.createElement(LockIcon, { className: "w-8 h-8 text-brand-purple-light" })
-                )
-            ),
-            React.createElement('h2', { className: "text-2xl font-bold text-white text-center mb-2" }, "Admin Access Required"),
-            React.createElement('p', { className: "text-brand-text-light text-center mb-6 text-sm" }, "Please enter the passkey to access platform settings."),
-            React.createElement('form', { onSubmit: handleSubmit, className: "space-y-4" },
-                React.createElement('div', null,
-                    React.createElement('input', {
-                        type: "password",
-                        value: password,
-                        onChange: (e) => { setPassword(e.target.value); setError(''); },
-                        placeholder: "Enter Passkey",
-                        className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none text-center tracking-widest placeholder-slate-500",
-                        autoFocus: true
-                    })
-                ),
-                error && React.createElement('p', { className: "text-red-400 text-sm text-center font-semibold" }, error),
-                React.createElement('button', {
-                    type: "submit",
-                    className: "w-full py-3 bg-button-gradient text-white font-bold rounded-lg shadow-lg hover:opacity-90 transition-all transform hover:scale-[1.02]"
-                }, "Unlock Dashboard")
-            )
-        )
-    );
-};
-
-const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated, onLogin, onLogout }) => {
+const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated, onLogout }) => {
     const t = i18n[language];
     const [formData, setFormData] = useState(settings);
     const [isSaved, setIsSaved] = useState(false);
@@ -57,8 +13,15 @@ const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated,
         setFormData(settings);
     }, [settings]);
 
+    // Safety check: In case user navigates here without auth
     if (!isAuthenticated) {
-        return React.createElement(AdminLogin, { onLogin });
+         return React.createElement('div', { className: "flex flex-col items-center justify-center h-full min-h-[60vh] animate-fade-in-up" },
+            React.createElement('div', { className: "bg-dark-card p-8 rounded-2xl border border-dark-border shadow-xl w-full max-w-md text-center glow-border" },
+                React.createElement(LockIcon, { className: "w-12 h-12 text-red-400 mx-auto mb-4" }),
+                React.createElement('h2', { className: "text-2xl font-bold text-white mb-2" }, "Access Denied"),
+                React.createElement('p', { className: "text-brand-text-light" }, "You must authenticate as an admin to view this page.")
+            )
+        );
     }
 
     const handleChange = (e) => {

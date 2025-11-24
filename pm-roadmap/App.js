@@ -48,7 +48,7 @@ const WelcomeModal = ({ isOpen, onClose, onAuthClick, language }) => {
 
 
 // Header Component
-const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, currentUser, onLoginClick, onLogout, theme, toggleTheme, onMenuToggle }) => {
+const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, currentUser, onLoginClick, onLogout, theme, toggleTheme, onMenuToggle, onAdminClick }) => {
   const t = i18n[language];
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -119,7 +119,7 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
                     className: "absolute top-full right-0 mt-2 w-48 bg-dark-card-solid border border-dark-border rounded-lg shadow-xl py-2 z-50 animate-fade-in-up"
                 },
                     React.createElement('button', {
-                         onClick: () => { setView(AppView.Admin); setIsUserMenuOpen(false); },
+                         onClick: () => { onAdminClick(); setIsUserMenuOpen(false); },
                          className: "w-full text-left px-4 py-2 text-sm text-brand-text-light hover:bg-white/10 hover:text-white flex items-center gap-2"
                     }, React.createElement(SettingsIcon, { className: "w-4 h-4" }), t.navAdmin),
                     React.createElement('div', { className: "border-t border-dark-border my-1" }),
@@ -147,7 +147,7 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
 };
 
 // Mobile Menu Component
-const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLanguage, isAuthenticated, onLoginClick, onLogout }) => {
+const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLanguage, isAuthenticated, onLoginClick, onLogout, onAdminClick }) => {
     if (!isOpen) return null;
     const t = i18n[language];
     
@@ -190,7 +190,7 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
                     }, link.label)
                 ),
                 React.createElement('button', {
-                    onClick: () => { setView(AppView.Admin); onClose(); },
+                    onClick: () => { onAdminClick(); onClose(); },
                     className: `w-full text-lg py-3 rounded-md hover:bg-dark-card-solid text-brand-text-light`
                 }, t.navAdmin)
             ),
@@ -204,7 +204,7 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
 };
 
 // Footer
-const Footer = ({ language, setView, contactEmail }) => {
+const Footer = ({ language, setView, contactEmail, onAdminClick }) => {
   const t = i18n[language];
   const SocialIcon = ({ href, children }) => React.createElement('a', { href, target: "_blank", rel: "noopener noreferrer", className: "w-10 h-10 flex items-center justify-center rounded-full bg-dark-card-solid hover:bg-brand-purple text-white transition-colors" }, children);
 
@@ -225,7 +225,7 @@ const Footer = ({ language, setView, contactEmail }) => {
             React.createElement('li', null, React.createElement('button', { onClick: () => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navFeatures)),
             React.createElement('li', null, React.createElement('button', { onClick: () => document.getElementById('industries')?.scrollIntoView({ behavior: 'smooth' }), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navIndustries)),
             React.createElement('li', null, React.createElement('button', { onClick: () => setView(AppView.Contact), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navContact)),
-            React.createElement('li', null, React.createElement('button', { onClick: () => setView(AppView.Admin), className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navAdmin))
+            React.createElement('li', null, React.createElement('button', { onClick: onAdminClick, className: "text-brand-text-light hover:text-brand-purple-light transition-colors" }, t.navAdmin))
           )
         ),
         // Column 3: Help
@@ -261,6 +261,7 @@ const App = () => {
   const [language, setLanguage] = useState(Language.EN);
   const [apiKeyError, setApiKeyError] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAuthModalAdminMode, setIsAuthModalAdminMode] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
@@ -353,8 +354,23 @@ const App = () => {
     setView(AppView.Home);
   };
 
+  const handleAdminAccess = () => {
+      if (isAdminAuthenticated) {
+          setView(AppView.Admin);
+      } else {
+          setIsAuthModalAdminMode(true);
+          setIsAuthModalOpen(true);
+      }
+  };
+
+  const handleAdminLoginSuccess = () => {
+      setIsAdminAuthenticated(true);
+      setIsAuthModalOpen(false);
+      setView(AppView.Admin);
+  };
+
   const renderView = () => {
-    const props = { language, setView, currentUser, theme, onLoginClick: () => setIsAuthModalOpen(true) };
+    const props = { language, setView, currentUser, theme, onLoginClick: () => { setIsAuthModalAdminMode(false); setIsAuthModalOpen(true); } };
     
     switch (view) {
       case AppView.Home: 
@@ -362,13 +378,15 @@ const App = () => {
       case AppView.Dashboard: 
         return React.createElement(Dashboard, { ...props, onLogout: handleLogout });
       case AppView.Admin:
+         // If we somehow get here without auth (unlikely with flow), AdminDashboard will probably handle or show blank, but safe to redirect if needed.
+         // For now AdminDashboard assumes auth or is purely view. 
+         // But we moved login logic to modal. 
          return React.createElement(AdminDashboard, { 
              language, 
              settings: adminSettings, 
              onUpdateSettings: updateAdminSettings,
              isAuthenticated: isAdminAuthenticated,
-             onLogin: () => setIsAdminAuthenticated(true),
-             onLogout: () => setIsAdminAuthenticated(false)
+             onLogout: () => { setIsAdminAuthenticated(false); setView(AppView.Home); }
          });
       case AppView.About: return React.createElement(About, props);
       case AppView.Contact: return React.createElement(Contact, { ...props, settings: adminSettings });
@@ -388,11 +406,12 @@ const App = () => {
       setLanguage: setLanguage,
       isAuthenticated: !!currentUser,
       currentUser: currentUser,
-      onLoginClick: () => setIsAuthModalOpen(true),
+      onLoginClick: () => { setIsAuthModalAdminMode(false); setIsAuthModalOpen(true); },
       onLogout: handleLogout,
       theme: theme,
       toggleTheme: toggleTheme,
-      onMenuToggle: () => setIsMobileMenuOpen(true)
+      onMenuToggle: () => setIsMobileMenuOpen(true),
+      onAdminClick: handleAdminAccess
     }),
     React.createElement(MobileMenu, {
       isOpen: isMobileMenuOpen,
@@ -402,8 +421,9 @@ const App = () => {
       language: language,
       setLanguage: setLanguage,
       isAuthenticated: !!currentUser,
-      onLoginClick: () => setIsAuthModalOpen(true),
-      onLogout: handleLogout
+      onLoginClick: () => { setIsAuthModalAdminMode(false); setIsAuthModalOpen(true); },
+      onLogout: handleLogout,
+      onAdminClick: handleAdminAccess
     }),
     React.createElement('main', { className: "flex-grow" },
       apiKeyError ? (
@@ -420,19 +440,23 @@ const App = () => {
     (view !== AppView.Dashboard && view !== AppView.Admin) && React.createElement(Footer, { 
         language: language, 
         setView: setView, 
-        contactEmail: adminSettings.contactEmail 
+        contactEmail: adminSettings.contactEmail,
+        onAdminClick: handleAdminAccess
     }),
     React.createElement(AuthModal, {
       isOpen: isAuthModalOpen,
       onClose: () => setIsAuthModalOpen(false),
       language: language,
-      setView: setView
+      setView: setView,
+      initialAdminMode: isAuthModalAdminMode,
+      onAdminLoginSuccess: handleAdminLoginSuccess
     }),
     React.createElement(WelcomeModal, {
       isOpen: isWelcomeModalOpen,
       onClose: () => setIsWelcomeModalOpen(false),
       onAuthClick: () => {
         setIsWelcomeModalOpen(false);
+        setIsAuthModalAdminMode(false);
         setIsAuthModalOpen(true);
       },
       language: language
