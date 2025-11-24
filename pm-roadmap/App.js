@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useEffect } from 'react';
 import { AppView, Language, i18n } from './constants.js';
 import Home from './components/Home.js';
@@ -13,7 +10,7 @@ import Terms from './components/Terms.js';
 import Privacy from './components/Privacy.js';
 import AdminDashboard from './components/AdminDashboard.js';
 import UserSettings from './components/UserSettings.js'; // Import
-import { UserIcon, Logo, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon, SettingsIcon } from './components/Shared.js';
+import { UserIcon, Logo, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon, SettingsIcon, Spinner } from './components/Shared.js';
 import { isAnyModelConfigured } from './services/geminiService.js';
 import AuthModal from './components/AuthModal.js';
 import { supabase, getCurrentUser, signOut } from './services/supabaseClient.js';
@@ -275,6 +272,7 @@ const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAuthModalAdminMode, setIsAuthModalAdminMode] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true); // New Loading state for Auth
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
@@ -325,10 +323,17 @@ const App = () => {
         setApiKeyError(true);
     }
     
-    // Check Supabase Auth on mount
+    // Initial check for Supabase Auth on mount
     const checkUser = async () => {
-        const user = await getCurrentUser();
-        setCurrentUser(user);
+        setIsAuthChecking(true);
+        try {
+            const user = await getCurrentUser();
+            setCurrentUser(user);
+        } catch (e) {
+            console.error("Auth check failed", e);
+        } finally {
+            setIsAuthChecking(false);
+        }
     };
     checkUser();
 
@@ -336,19 +341,22 @@ const App = () => {
     let authListener = null;
     if (supabase) {
         const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN') {
-                 // User just signed in
-                 const user = await getCurrentUser();
-                 setCurrentUser(user);
-                 setIsAuthModalOpen(false);
-                 setView(AppView.Dashboard);
-            } else if (event === 'TOKEN_REFRESHED') {
-                 // Session refreshed (happens automatically). Just update user state, don't force redirect.
-                 const user = await getCurrentUser();
-                 setCurrentUser(user);
+            // Only react to explicit changes to avoid unnecessary re-renders or fetch loops
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                 // Check if user object is actually different before setting state
+                 if (session?.user?.id && session.user.id !== currentUser?.id) {
+                     const user = await getCurrentUser();
+                     setCurrentUser(user);
+                 }
+                 if (event === 'SIGNED_IN') {
+                    setIsAuthModalOpen(false);
+                    setView(AppView.Dashboard);
+                 }
             } else if (event === 'SIGNED_OUT') {
                 setCurrentUser(null);
                 setView(AppView.Home);
+            } else if (event === 'TOKEN_REFRESHED') {
+                 // Silent update if needed
             }
         });
         authListener = data.subscription;
@@ -364,7 +372,7 @@ const App = () => {
     return () => {
         if (authListener) authListener.unsubscribe();
     };
-  }, []);
+  }, []); // Run once on mount
 
   
   const handleLogout = async () => {
@@ -393,6 +401,13 @@ const App = () => {
       setIsAuthModalOpen(false);
       setView(AppView.Admin);
   };
+
+  // Prevent rendering until we know auth state to avoid flashing "Logged Out" UI
+  if (isAuthChecking) {
+      return React.createElement('div', { className: "min-h-screen flex items-center justify-center bg-dark-bg text-white" },
+        React.createElement(Spinner, { size: "12" })
+      );
+  }
 
   const renderView = () => {
     const props = { language, setView, currentUser, theme, onLoginClick: () => { setIsAuthModalAdminMode(false); setIsAuthModalOpen(true); } };

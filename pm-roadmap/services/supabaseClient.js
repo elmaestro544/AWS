@@ -1,5 +1,4 @@
 
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = window.process?.env?.SUPABASE_URL;
@@ -9,8 +8,15 @@ const isValidSupabaseConfig = () =>
     supabaseUrl && supabaseUrl !== 'YOUR_SUPABASE_URL_HERE' && 
     supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY_HERE';
 
+// Explicitly enable session persistence in localStorage
 export const supabase = isValidSupabaseConfig() 
-    ? createClient(supabaseUrl, supabaseAnonKey) 
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    }) 
     : null;
 
 // --- Auth Wrappers ---
@@ -44,8 +50,11 @@ export const signOut = async () => {
 
 export const getCurrentUser = async () => {
     if (!supabase) return null;
+    
+    // Check for existing session first
     const { data: { session }, error } = await supabase.auth.getSession();
-    if (error || !session) return null;
+    
+    if (error || !session?.user) return null;
     
     // Enrich with user metadata
     return {

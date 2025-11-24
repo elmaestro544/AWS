@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { i18n } from '../constants.js';
 import { SettingsIcon, CheckIcon, Spinner, LockIcon } from './Shared.js';
@@ -22,12 +21,13 @@ const UserSettings = ({ language, currentUser }) => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        let mounted = true;
         const loadSettings = async () => {
             if (!currentUser) return;
             setIsLoading(true);
             try {
                 const settings = await getUserSettings();
-                if (settings) {
+                if (mounted && settings) {
                     setFormData({
                         aiProvider: settings.aiProvider || 'google',
                         aiApiKey: settings.aiApiKey || '',
@@ -37,10 +37,11 @@ const UserSettings = ({ language, currentUser }) => {
             } catch (err) {
                 console.error("Failed to load user settings", err);
             } finally {
-                setIsLoading(false);
+                if (mounted) setIsLoading(false);
             }
         };
         loadSettings();
+        return () => { mounted = false; };
     }, [currentUser]);
 
     const handleChange = (e) => {
@@ -61,11 +62,12 @@ const UserSettings = ({ language, currentUser }) => {
         setModelFetchError('');
         try {
             const models = await fetchAvailableModels(formData.aiProvider, formData.aiApiKey);
-            setAvailableModels(models);
+            const safeModels = Array.isArray(models) ? models : [];
+            setAvailableModels(safeModels);
             
             // If current model isn't in list, select first one
-            if (models.length > 0 && !models.find(m => m.id === formData.aiModel)) {
-                setFormData(prev => ({ ...prev, aiModel: models[0].id }));
+            if (safeModels.length > 0 && !safeModels.find(m => m.id === formData.aiModel)) {
+                setFormData(prev => ({ ...prev, aiModel: safeModels[0].id }));
             }
         } catch (err) {
             setModelFetchError(err.message || 'Failed to fetch models');
@@ -135,7 +137,7 @@ const UserSettings = ({ language, currentUser }) => {
                                 React.createElement('select', {
                                     id: "aiProvider",
                                     name: "aiProvider",
-                                    value: formData.aiProvider,
+                                    value: formData.aiProvider || 'google',
                                     onChange: handleChange,
                                     className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none"
                                 },
@@ -151,7 +153,7 @@ const UserSettings = ({ language, currentUser }) => {
                                     type: "password",
                                     id: "aiApiKey",
                                     name: "aiApiKey",
-                                    value: formData.aiApiKey,
+                                    value: formData.aiApiKey || '',
                                     onChange: handleChange,
                                     placeholder: `Enter your ${formData.aiProvider} API key...`,
                                     className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all hover:border-brand-purple/50"
@@ -173,7 +175,7 @@ const UserSettings = ({ language, currentUser }) => {
                                 React.createElement('select', {
                                     id: "aiModel",
                                     name: "aiModel",
-                                    value: formData.aiModel,
+                                    value: formData.aiModel || 'gemini-2.5-flash',
                                     onChange: handleChange,
                                     className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none"
                                 },
